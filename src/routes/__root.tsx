@@ -125,9 +125,14 @@ function RootComponent() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      // SIGNED_IN is handled by the auth page's explicit navigate(); reacting
+      // here too would cancel that navigation mid-flight (blank page race).
+      if (event === "SIGNED_OUT") {
+        router.invalidate();
+      } else if (event === "USER_UPDATED") {
+        router.invalidate();
+        queryClient.invalidateQueries();
+      }
     });
     return () => subscription.unsubscribe();
   }, [router, queryClient]);

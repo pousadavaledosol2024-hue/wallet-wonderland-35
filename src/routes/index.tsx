@@ -1,24 +1,33 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Pousada Vale do Sol — Financeiro" },
+      { name: "description", content: "Painel financeiro da Pousada Vale do Sol: receitas, despesas e fluxo de caixa." },
+      { property: "og:title", content: "Pousada Vale do Sol — Financeiro" },
+      { property: "og:description", content: "Painel financeiro da Pousada Vale do Sol: receitas, despesas e fluxo de caixa." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      navigate({ to: data.session ? "/financeiro" : "/auth", replace: true });
+    });
+  }, [navigate]);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <p className="text-muted-foreground">Carregando...</p>
     </div>
   );
 }

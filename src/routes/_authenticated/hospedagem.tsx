@@ -308,7 +308,7 @@ function RoomDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChan
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!name.trim()) return toast.error("Informe o nome do quarto.");
+    if (!name.trim()) { toast.error("Informe o nome do quarto."); return; }
     setSaving(true);
     const user_id = await getUserId();
     const { error } = await supabase.from("rooms").insert({
@@ -319,7 +319,7 @@ function RoomDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChan
       daily_rate: parseMoney(rate),
     });
     setSaving(false);
-    if (error) return toast.error("Não foi possível salvar o quarto.");
+    if (error) { toast.error("Não foi possível salvar o quarto."); return; }
     toast.success("Quarto cadastrado.");
     setName("");
     setRate("");
@@ -383,8 +383,8 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
 
   async function save() {
     if (!room) return;
-    if (!f.guest_name.trim() || !f.guest_document.trim()) return toast.error("Informe nome e documento do hóspede.");
-    if (nights < 1) return toast.error("A data de saída deve ser após hoje.");
+    if (!f.guest_name.trim() || !f.guest_document.trim()) { toast.error("Informe nome e documento do hóspede."); return; }
+    if (nights < 1) { toast.error("A data de saída deve ser após hoje."); return; }
     setSaving(true);
     const user_id = (await getUserId())!;
     const { error } = await supabase.from("reservations").insert({
@@ -405,7 +405,7 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
     });
     if (!error) await supabase.from("rooms").update({ status: "ocupado" }).eq("id", room.id);
     setSaving(false);
-    if (error) return toast.error("Não foi possível registrar o check-in.");
+    if (error) { toast.error("Não foi possível registrar o check-in."); return; }
     toast.success(`Check-in de ${f.guest_name} em ${room.name}.`);
     onClose();
     onSaved();
@@ -515,7 +515,7 @@ function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: R
       }
     }
     setSaving(false);
-    if (error) return toast.error("Não foi possível concluir o check-out.");
+    if (error) { toast.error("Não foi possível concluir o check-out."); return; }
     toast.success(`Check-out concluído. ${data.room.name} enviado para limpeza.`);
     onClose();
     onSaved();

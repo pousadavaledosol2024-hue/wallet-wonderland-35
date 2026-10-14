@@ -15,6 +15,13 @@
       "when": 1791913676494,
       "tag": "0001_erp_pousada_lanchonete",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791936774934,
+      "tag": "0002_realtime_rooms_reservations",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminHeader } from "@/components/admin-header";
 import { TransactionDialog, type Transaction } from "@/components/financeiro/transaction-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,10 +30,8 @@ import {
   ArrowUpCircle,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   Pencil,
   Plus,
-  Sun,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -69,7 +68,6 @@ function formatDate(iso: string) {
 }
 
 function FinanceiroPage() {
-  const navigate = useNavigate();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth()); // 0-based
@@ -155,32 +153,11 @@ function FinanceiroPage() {
     load();
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-              <Sun className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold leading-tight">Pousada Vale do Sol</h1>
-              <p className="text-sm text-muted-foreground">Painel financeiro</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Button>
-        </div>
-      </header>
+      <AdminHeader />
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => shiftMonth(-1)} aria-label="Mês anterior">

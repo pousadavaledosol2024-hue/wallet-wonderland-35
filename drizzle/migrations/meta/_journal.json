@@ -50,6 +50,13 @@
       "when": 1792032168667,
       "tag": "0006_tighten_team_media_access",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792032366914,
+      "tag": "0007_cash_shifts_stock_operations",
+      "breakpoints": true
     }
   ]
 }

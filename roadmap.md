@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Ajustar tarifas e políticas para percentuais decimais de crianças/pets, carregar padrões originais e aplicar cálculo por hóspedes e datas no check-in.
 - [x] Cadastros anteriores importados do site antigo (pousadavaledosol2024.com.br): 2 quartos, configurações completas (contatos, PIX, endereço, horários, redes sociais, OTAs, acréscimo de fim de semana 10%, desconto adulto extra 34%, política de cancelamento), 8 fotos da galeria e logomarca enviadas ao armazenamento. Pendentes de revisão do usuário: diária de criança e taxas de pets eram percentuais no sistema antigo (65% / 20,7% / 27,6% / 34,5%) e o painel usa valores em R$; foto de capa antiga estava em formato HEIC (não exibido por navegadores).
 - [x] Publicação solicitada (aguarda implantação; sincronização do site externo depende do código dele)
 - [ ] Usuário conecta o projeto ao GitHub: menu + (Plus) → GitHub → Connect project (ação manual do usuário; eu não consigo executar o push)

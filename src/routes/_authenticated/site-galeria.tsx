@@ -6,6 +6,7 @@ import { Save, Upload, ImageIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { configOptions, siteFields, settingsSchema } from "@/lib/admin-config";
 import { saveSettings } from "@/lib/admin-config.functions";
+import { percentageKeys, withPricingDefaults } from "@/lib/pricing";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfigShell, configHead } from "@/components/config-shell";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 export const Route = createFileRoute("/_authenticated/site-galeria")({ loader: ({ context }) => context.queryClient.ensureQueryData(configOptions), head: () => configHead("Site & Galeria", "Identidade, contatos, localização, tarifas, políticas e imagens da pousada."), component: SitePage });
 function SitePage() {
   const { data: config } = useSuspenseQuery(configOptions); const qc = useQueryClient(); const save = useServerFn(saveSettings);
-  const [draft, setDraft] = useState<Record<string, string>>({ ...config.settings }); const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(withPricingDefaults(config.settings)).map(([key, value]) => [key, percentageKeys.has(key) ? value.replace(".", ",") : value]))); const [busy, setBusy] = useState(false);
   const [images, setImages] = useState<{ name: string; url: string }[]>([]);
   const [mediaError, setMediaError] = useState("");
   async function loadMedia() {

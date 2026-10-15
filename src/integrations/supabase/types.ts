@@ -153,6 +153,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ical_feeds: {
+        Row: {
+          active: boolean
+          created_at: string
+          export_token: string
+          id: string
+          import_url: string
+          last_error: string | null
+          last_synced_at: string | null
+          provider: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          export_token?: string
+          id?: string
+          import_url?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          export_token?: string
+          id?: string
+          import_url?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ical_feeds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ingredients: {
         Row: {
           created_at: string
@@ -188,6 +235,30 @@ export type Database = {
           unit?: string
           unit_cost?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      message_templates: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -418,12 +489,14 @@ export type Database = {
           check_in: string
           check_out: string
           created_at: string
+          external_uid: string | null
           guest_document: string | null
           guest_email: string | null
           guest_name: string
           guest_phone: string | null
           guests_count: number
           id: string
+          import_feed_id: string | null
           notes: string | null
           paid_amount: number
           room_id: string
@@ -437,12 +510,14 @@ export type Database = {
           check_in: string
           check_out: string
           created_at?: string
+          external_uid?: string | null
           guest_document?: string | null
           guest_email?: string | null
           guest_name: string
           guest_phone?: string | null
           guests_count?: number
           id?: string
+          import_feed_id?: string | null
           notes?: string | null
           paid_amount?: number
           room_id: string
@@ -456,12 +531,14 @@ export type Database = {
           check_in?: string
           check_out?: string
           created_at?: string
+          external_uid?: string | null
           guest_document?: string | null
           guest_email?: string | null
           guest_name?: string
           guest_phone?: string | null
           guests_count?: number
           id?: string
+          import_feed_id?: string | null
           notes?: string | null
           paid_amount?: number
           room_id?: string
@@ -472,6 +549,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reservations_import_feed_id_fkey"
+            columns: ["import_feed_id"]
+            isOneToOne: false
+            referencedRelation: "ical_feeds"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reservations_room_id_fkey"
             columns: ["room_id"]
@@ -515,6 +599,24 @@ export type Database = {
           notes?: string | null
           room_type?: string
           status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          settings: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          settings?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          settings?: Json
           updated_at?: string
           user_id?: string
         }
@@ -661,6 +763,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          account_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       cash_register_summary: {
@@ -723,10 +846,28 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      account_owner: { Args: never; Returns: string }
+      apply_ical_events: {
+        Args: { _events: Json; _feed: string }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      set_member_role: {
+        Args: {
+          _member: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "recepcao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -853,6 +994,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "recepcao"],
+    },
   },
 } as const

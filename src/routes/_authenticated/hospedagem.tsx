@@ -31,6 +31,8 @@ import { configOptions } from "@/lib/admin-config";
 import { calculateStay } from "@/lib/pricing";
 import { registerCheckIn } from "@/lib/check-in.functions";
 import { managementOptions, useManagementRealtime } from "@/lib/management";
+import { CrudActions } from "@/components/crud-actions";
+import { deleteCatalogItem } from "@/lib/catalog.functions";
 import { MonthlyOccupancy } from "@/components/monthly-occupancy";
 
 export const Route = createFileRoute("/_authenticated/hospedagem")({
@@ -67,6 +69,9 @@ const fmt = (s: string) => s.split("-").reverse().join("/");
 
 function HospedagemPage() {
   const { data } = useSuspenseQuery(managementOptions);
+  const { data: config } = useSuspenseQuery(configOptions);
+  const removeCatalog = useServerFn(deleteCatalogItem);
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const { rooms, reservations } = data;
   const qc = useQueryClient();
   const connection = useManagementRealtime();
@@ -109,7 +114,7 @@ function HospedagemPage() {
             <h2 className="text-2xl font-semibold">Hospedagem</h2>
             <p className="text-sm text-muted-foreground">Ocupação, quartos e estadias</p>
           </div>
-          <Button variant="outline" onClick={() => setRoomDialog(true)}>
+          <Button variant="outline" disabled={config.role !== "admin"} onClick={() => { setEditingRoom(null); setRoomDialog(true); }}>
             <Plus className="mr-2 h-4 w-4" /> Novo quarto
           </Button>
         </div>
@@ -159,6 +164,7 @@ function HospedagemPage() {
                           {STATUS[st].label}
                         </Badge>
                       </div>
+                      <CrudActions name={room.name} disabled={config.role !== "admin"} deleteDisabled={reservations.some(r => r.room_id === room.id)} reason="Quartos vinculados a reservas são preservados; alterações de cadastro exigem administrador." onEdit={() => { setEditingRoom(room); setRoomDialog(true); }} onDelete={async () => { try { await removeCatalog({ data: { id: room.id, kind: "rooms" } }); load(); toast.success("Quarto excluído"); } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível excluir"); throw e; } }} />
                       {active && (
                         <div className="rounded-md bg-card p-2 text-sm">
                           <p className="font-medium">{active.guest_name}</p>
@@ -206,7 +212,7 @@ function HospedagemPage() {
 
       </main>
 
-      <RoomDialog open={roomDialog} onOpenChange={setRoomDialog} onSaved={load} />
+      <RoomDialog room={editingRoom} open={roomDialog} onOpenChange={setRoomDialog} onSaved={load} />
       <CheckInDialog room={checkInRoom} onClose={() => setCheckInRoom(null)} onSaved={load} />
       <CheckOutDialog data={checkOutRes} onClose={() => setCheckOutRes(null)} onSaved={load} />
     </div>
@@ -223,38 +229,34 @@ function parseMoney(v: string) {
   return Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 }
 
-function RoomDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (o: boolean) => void; onSaved: () => void }) {
+function RoomDialog({ room, open, onOpenChange, onSaved }: { room: Room | null; open: boolean; onOpenChange: (o: boolean) => void; onSaved: () => void }) {
   const [name, setName] = useState("");
   const [type, setType] = useState("Suíte");
   const [capacity, setCapacity] = useState("2");
   const [rate, setRate] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => { if (open) { setName(room?.name ?? ""); setType(room?.room_type ?? "Suíte"); setCapacity(String(room?.capacity ?? 2)); setRate(room ? Number(room.daily_rate).toFixed(2).replace(".", ",") : ""); } }, [open, room]);
+
   async function save() {
     if (!name.trim()) { toast.error("Informe o nome do quarto."); return; }
     setSaving(true);
-    const user_id = await getUserId();
-    const { error } = await supabase.from("rooms").insert({
-      user_id,
-      name: name.trim(),
-      room_type: type,
-      capacity: Number(capacity) || 1,
-      daily_rate: parseMoney(rate),
-    });
-    setSaving(false);
-    if (error) { toast.error("Não foi possível salvar o quarto."); return; }
-    toast.success("Quarto cadastrado.");
-    setName("");
-    setRate("");
-    onOpenChange(false);
-    onSaved();
+    try {
+      const payload = { name: name.trim(), room_type: type, capacity: Number(capacity), daily_rate: parseMoney(rate) };
+      if (!Number.isInteger(payload.capacity) || payload.capacity < 1) throw Error("Informe uma capacidade válida.");
+      const result = room ? await supabase.from("rooms").update(payload).eq("id", room.id).select("id").single() : await supabase.from("rooms").insert({ ...payload, user_id: await getUserId() }).select("id").single();
+      if (result.error || !result.data) throw Error("Não foi possível salvar o quarto.");
+      toast.success(room ? "Quarto atualizado." : "Quarto cadastrado.");
+      onOpenChange(false); onSaved();
+    } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível salvar"); }
+    finally { setSaving(false); }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo quarto</DialogTitle>
+          <DialogTitle>{room ? "Editar quarto" : "Novo quarto"}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-1.5">

@@ -12,9 +12,16 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, BedDouble, Minus, Plus, Receipt, Search, ShoppingBag, Trash2, Utensils, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { configOptions } from "@/lib/admin-config";
+import { CrudActions } from "@/components/crud-actions";
+import { CatalogDialog } from "@/components/catalog-dialog";
+import { deleteCatalogItem } from "@/lib/catalog.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/pdv")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(configOptions),
   head: () => ({
     meta: [
       { title: "Lanchonete / PDV — Pousada Vale do Sol" },
@@ -54,6 +61,13 @@ function orderKind(o: Order) {
 }
 
 function PdvPage() {
+  const { data: config } = useSuspenseQuery(configOptions);
+  const removeCatalog = useServerFn(deleteCatalogItem);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [orderName, setOrderName] = useState("");
+  const [orderTable, setOrderTable] = useState("");
+  const [savingOrder, setSavingOrder] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -121,6 +135,7 @@ function PdvPage() {
 
   async function changeQty(i: Item, d: number) {
     const q2 = Number(i.quantity) + d;
+    if (q2 <= 0 && !window.confirm(`Excluir ${i.product_name} da comanda? A quantidade volta ao estoque.`)) return;
     const { error } = q2 <= 0
       ? await supabase.from("order_items").delete().eq("id", i.id)
       : await supabase.from("order_items").update({ quantity: q2 }).eq("id", i.id);
@@ -129,9 +144,11 @@ function PdvPage() {
   }
 
   async function cancelOrder(o: Order) {
-    if (!confirm(`Cancelar a comanda #${o.number}? Os itens voltam para o estoque.`)) return;
-    await supabase.from("order_items").delete().eq("order_id", o.id);
-    await supabase.from("orders").update({ status: "cancelada", closed_at: new Date().toISOString() }).eq("id", o.id);
+
+    const { error: itemError } = await supabase.from("order_items").delete().eq("order_id", o.id);
+    if (itemError) throw Error("Não foi possível remover os itens.");
+    const { error } = await supabase.from("orders").update({ status: "cancelada", closed_at: new Date().toISOString() }).eq("id", o.id);
+    if (error) throw Error("Não foi possível cancelar a comanda.");
     setSelected(null);
     toast.success("Comanda cancelada.");
     load();
@@ -147,7 +164,7 @@ function PdvPage() {
             <p className="text-sm text-muted-foreground">Comandas de quartos e mesas, e vendas rápidas de balcão.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => setProductDlg(true)}><Plus className="mr-2 h-4 w-4" />Novo produto</Button>
+            <Button variant="outline" disabled={config.role !== "admin"} onClick={() => setProductDlg(true)}><Plus className="mr-2 h-4 w-4" />Novo produto</Button>
             <Button variant="secondary" onClick={() => setNewOrder(true)}><Receipt className="mr-2 h-4 w-4" />Nova comanda</Button>
             <Button onClick={quickSale}><ShoppingBag className="mr-2 h-4 w-4" />Venda rápida</Button>
           </div>
@@ -205,12 +222,13 @@ function PdvPage() {
               ) : (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {shown.map((p) => (
-                    <button key={p.id} onClick={() => addProduct(p)} disabled={!order}
-                      className="rounded-lg border bg-card p-3 text-left transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50">
+                    <article key={p.id} className="min-w-0 rounded-lg border bg-card p-3">
+                      <Button variant="ghost" className="h-auto w-full flex-col items-start whitespace-normal p-0 text-left" onClick={() => addProduct(p)} disabled={!order}>
                       <p className="font-medium leading-tight">{p.name}</p>
                       <p className="text-xs text-muted-foreground">{p.category}</p>
                       <p className="mt-1 font-semibold text-primary">{brl.format(Number(p.price))}</p>
-                    </button>
+                      </Button><div className="mt-3"><CrudActions name={p.name} disabled={config.role !== "admin"} onEdit={() => setEditingProduct(p)} onDelete={async () => { try { await removeCatalog({ data: { id: p.id, kind: "products" } }); await load(); toast.success("Produto excluído"); } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível excluir"); throw e; } }} description="O produto será retirado do catálogo, preservando suas vendas anteriores." /></div>
+                    </article>
                   ))}
                 </div>
               )}
@@ -253,9 +271,7 @@ function PdvPage() {
                   ) : (
                     <Button className="w-full" disabled={items.length === 0} onClick={() => setPayOrder(order)}>Fechar e receber</Button>
                   )}
-                  <Button variant="ghost" className="w-full text-destructive" onClick={() => cancelOrder(order)}>
-                    <Trash2 className="mr-2 h-4 w-4" />Cancelar comanda
-                  </Button>
+                  <CrudActions name={`comanda #${order.number}`} onEdit={() => { setEditingOrder(order); setOrderName(order.customer_name ?? ""); setOrderTable(order.table_label ?? ""); }} deleteLabel="Cancelar" description="Cancelar esta comanda? Os itens voltarão ao estoque e o histórico será preservado." onDelete={async () => { try { await cancelOrder(order); } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível cancelar"); throw e; } }} />
                 </>
               )}
             </CardContent>
@@ -263,6 +279,8 @@ function PdvPage() {
         </div>
       </main>
 
+      <CatalogDialog item={editingProduct} kind="products" onClose={() => setEditingProduct(null)} onSaved={load} />
+      <Dialog open={Boolean(editingOrder)} onOpenChange={open => { if (!open && !savingOrder) setEditingOrder(null); }}><DialogContent><DialogHeader><DialogTitle>Editar comanda</DialogTitle></DialogHeader><form className="space-y-4" onSubmit={async e => { e.preventDefault(); if (!editingOrder) return; setSavingOrder(true); try { const { data, error } = await supabase.from("orders").update({ customer_name: orderName.trim() || null, ...(editingOrder.reservation_id ? {} : { table_label: orderTable.trim() }) }).eq("id", editingOrder.id).eq("status", "aberta").select("id").single(); if (error || !data) throw Error("Não foi possível alterar a comanda."); await load(); setEditingOrder(null); toast.success("Comanda atualizada"); } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível alterar"); } finally { setSavingOrder(false); } }}><Label htmlFor="order-customer">Cliente</Label><Input id="order-customer" value={orderName} maxLength={120} onChange={e => setOrderName(e.target.value)} /><Label htmlFor="order-table">Mesa / balcão / quarto</Label><Input id="order-table" required disabled={Boolean(editingOrder?.reservation_id)} value={orderTable} maxLength={120} onChange={e => setOrderTable(e.target.value)} /><Button type="submit" disabled={savingOrder}>Salvar alterações</Button></form></DialogContent></Dialog>
       <NewOrderDialog open={newOrder} onClose={() => setNewOrder(false)} onCreated={(o) => { setOrders((x) => [...x, o]); setSelected(o.id); }} />
       <ProductDialog open={productDlg} onClose={() => setProductDlg(false)} onSaved={load} />
       <PayDialog order={payOrder} total={total} onClose={() => setPayOrder(null)} onPaid={() => { setSelected(null); load(); }} />
@@ -447,7 +465,7 @@ function ProductDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
                 </Select>
                 <Input className="w-20" inputMode="decimal" value={r.quantity} onChange={(e) => setRecipe((x) => x.map((y, j) => (j === idx ? { ...y, quantity: e.target.value } : y)))} />
                 <span className="w-8 text-xs text-muted-foreground">{unitOf(r.ingredient_id)}</span>
-                <Button size="icon" variant="ghost" onClick={() => setRecipe((x) => x.filter((_, j) => j !== idx))}><X className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" title="Excluir insumo da receita" aria-label="Excluir insumo da receita" onClick={() => { if (window.confirm("Excluir este insumo da receita?")) setRecipe((x) => x.filter((_, j) => j !== idx)); }}><X className="h-4 w-4" /></Button>
               </div>
             ))}
             {ings.length > 0 && (

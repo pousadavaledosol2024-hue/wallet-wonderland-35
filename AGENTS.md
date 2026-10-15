@@ -20,3 +20,5 @@
 - Cash operations and order/check-out settlement run as account-authorized database RPCs with register row locks; transactions create one ledger movement and closed-shift receipts are immutable to preserve reconciliation.
 - Cash and stock screens share operations query options and effect-scoped subscriptions; stock sectors use the same ingredients and movement model as PDV recipes.
 - Stay pricing lives in the browser-safe pricing module and is recalculated by the authenticated check-in function using account settings and room rates; the UI cannot override the saved total, and existing reservation totals remain unchanged.
+- Management item controls use shared CrudActions confirmation dialogs; product removal archives the catalog entry, catalog deletion checks account/admin access, and immutable operational history exposes disabled controls rather than destructive writes.
+- Reservation contact edits preserve dates and pricing; cancellation retains history and is limited to direct unstarted, unpaid reservations without orders, while imported reservations remain managed by their feed.

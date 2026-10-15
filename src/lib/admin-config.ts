@@ -14,7 +14,7 @@ const allowedKeys = new Set<string>(siteFields.flatMap((s) => s.fields.map((f) =
 export const imageUrlSchema = z.string().trim().max(2000).url().refine((value) => { try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; } catch { return false; } }, "Use uma URL HTTPS de imagem válida.");
 export const galleryUrlsSchema = z.array(imageUrlSchema).max(100);
 export function readGalleryUrls(settings: Record<string, string>): string[] {
-  try { const parsed = galleryUrlsSchema.safeParse(JSON.parse(settings.gallery_urls || "[]")); return parsed.success ? parsed.data : []; } catch { return []; }
+  try { const parsed = galleryUrlsSchema.safeParse(JSON.parse(settings["gallery_urls"] || "[]")); return parsed.success ? parsed.data : []; } catch { return []; }
 }
 export const fieldHelp: Record<string, string> = {
   whatsapp_webhook: "Recebe notificação no seu WhatsApp a cada pré-reserva.",

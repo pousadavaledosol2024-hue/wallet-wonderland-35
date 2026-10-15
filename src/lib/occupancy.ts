@@ -1,7 +1,7 @@
 import type { Tables } from "@/integrations/supabase/types";
 
 export function monthlyOccupancy(rooms: Tables<"rooms">[], reservations: Tables<"reservations">[], month: string) {
-  const [year, number] = month.split("-").map(Number);
+  const year = Number(month.slice(0, 4)), number = Number(month.slice(5, 7));
   const length = new Date(year, number, 0).getDate();
   const days = Array.from({ length }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
   const stays = reservations.filter(r => ["pre_reserva", "confirmada", "hospedado", "finalizada"].includes(r.status));

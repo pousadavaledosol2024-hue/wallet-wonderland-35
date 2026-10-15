@@ -10,7 +10,8 @@
 <!-- LOVABLE:END -->
 
 - Dashboard and calendar share React Query options and effect-scoped Realtime subscriptions; one data model keeps occupancy consistent across views.
-- Occupancy is a separate read-only route using the shared management query and Realtime lifecycle; operational room changes remain in Hospedagem to avoid duplicate workflows.
+- Monthly occupancy is embedded in Hospedagem using shared management data and Realtime; the legacy occupancy URL redirects there to avoid duplicate workflows.
+- External gallery URLs are account-scoped settings, separate from private uploaded files; saving gallery URLs preserves other site settings, and preview signed URLs are never persisted.
 - Public availability exposes only room identifiers and blocked dates, never guest or payment data; booking conflict prevention runs in the database for every writer.
 - External website integration must be verified against its actual deployed code before being reported as connected.
 - Configuration and templates are account-scoped; user_roles stores protected roles and account ownership, and privileged account operations verify roles using the authenticated client before importing the admin client.

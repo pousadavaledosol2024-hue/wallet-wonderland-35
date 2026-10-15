@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck, Banknote, Package, Hotel } from "lucide-react";
+import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck, Banknote, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,7 +12,6 @@ export function AdminHeader() {
   const tabs = [
     { to: "/visao-geral", label: "Visão Geral", icon: LayoutDashboard },
     { to: "/calendario", label: "Calendário", icon: CalendarDays },
-    { to: "/ocupacao", label: "Ocupação", icon: Hotel },
     { to: "/hospedagem", label: "Hospedagem", icon: BedDouble },
     { to: "/pdv", label: "Lanchonete/PDV", icon: Utensils },
     { to: "/caixa", label: "Caixa", icon: Banknote },
@@ -40,7 +39,7 @@ export function AdminHeader() {
         </div>
         <nav aria-label="Menu administrativo" className="grid grid-cols-2 gap-1 border-t pt-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {tabs.map(({ to, label, icon: Icon }) => <Button key={to} asChild variant="ghost" className="h-auto min-h-10 min-w-0 justify-start px-2 py-2 text-muted-foreground">
-            <Link to={to} activeOptions={{ exact: true }} activeProps={{ className: "bg-primary/10 text-primary" }}>
+            <Link to={to} activeOptions={{ exact: true }} activeProps={{ className: "bg-primary text-primary-foreground" }}>
               <Icon className="h-4 w-4 shrink-0" /><span className="min-w-0 whitespace-normal text-left text-xs leading-4 sm:text-sm">{label}</span>
             </Link>
           </Button>)}

@@ -1,11 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 import { calculateStay, decimalNumber, withPricingDefaults } from "@/lib/pricing";
 vi.mock("@/lib/admin-config.functions", () => ({ getAdminConfig: vi.fn() }));
-import { settingsSchema } from "@/lib/admin-config";
+import { settingsSchema, readGalleryUrls, imageUrlSchema } from "@/lib/admin-config";
 
 const guests = { adults: 1, children: 0, petSmall: 0, petMedium: 0, petLarge: 0 };
 const settings = { extra_adult_discount: "34", weekend_percent: "10", holiday_percent: "20" };
 describe("Percentage settings", () => {
+  it("accepts an optional HTTPS webhook and rejects unsafe protocols", () => {
+    expect(settingsSchema.safeParse({ whatsapp_webhook: "" }).success).toBe(true);
+    expect(settingsSchema.safeParse({ whatsapp_webhook: "https://api.callmebot.com/whatsapp.php" }).success).toBe(true);
+    expect(settingsSchema.safeParse({ whatsapp_webhook: "javascript:alert(1)" }).success).toBe(false);
+  });
+  it("validates external gallery URLs and tolerates malformed stored data", () => {
+    expect(readGalleryUrls({ gallery_urls: '["https://example.com/photo.jpg"]' })).toEqual(["https://example.com/photo.jpg"]);
+    expect(readGalleryUrls({ gallery_urls: "invalid" })).toEqual([]);
+    expect(imageUrlSchema.safeParse("http://example.com/photo.jpg").success).toBe(false);
+  });
   it("uses original defaults only for missing or blank values", () => {
     expect(withPricingDefaults({ child_rate: "0", pet_small: "22,5", pet_medium: "" })).toMatchObject({ child_rate: "0", pet_small: "22,5", pet_medium: "27.6", pet_large: "34.5" });
   });

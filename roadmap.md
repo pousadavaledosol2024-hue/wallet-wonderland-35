@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Novo pedido: Caixa (abertura com operador, movimentos por pagamento, sangria/suprimento, fechamento cego e resumo de divergências)
+- [ ] Novo pedido: Estoque (insumos e materiais, níveis mínimos e alertas vermelhos)
+- [ ] Novo pedido: Financeiro (fluxo diário/mensal e receitas separadas por pousada/lanchonete)
+- [ ] Novo pedido: apple-touch-icon em /logo.png usando a logomarca real da pousada
 - [x] Lanchonete / PDV (comandas quarto/mesa, balcão, baixa de estoque por item)
 - [ ] Bloco 1: tempo real, bloqueio de calendário no site público, iCal/OTAs, tarifas por hóspede (fim de semana, adulto extra, crianças, pets P/M/G)
 - [x] Pedido atual: Visão Geral em tempo real e Calendário com datas livres/reservadas e detalhes de hóspede/origem

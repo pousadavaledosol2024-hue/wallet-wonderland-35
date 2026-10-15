@@ -43,6 +43,13 @@
       "when": 1792031335089,
       "tag": "0005_admin_settings_ical_access",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792032168667,
+      "tag": "0006_tighten_team_media_access",
+      "breakpoints": true
     }
   ]
 }

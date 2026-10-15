@@ -500,41 +500,9 @@ function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: R
   async function confirm() {
     if (!data || !res) return;
     setSaving(true);
-    const user_id = await getUserId();
-    const today = iso(new Date());
-    const { error } = await supabase
-      .from("reservations")
-      .update({ status: "finalizada", paid_amount: Number(res.total_amount), check_out: today > res.check_in ? today : res.check_out })
-      .eq("id", res.id);
-    if (!error) {
-      await supabase.from("rooms").update({ status: "limpeza" }).eq("id", data.room.id);
-      if (Number(res.total_amount) > 0) {
-        await supabase.from("transactions").insert({
-          user_id,
-          type: "receita",
-          category: "Hospedagem",
-          description: `Hospedagem ${data.room.name} — ${res.guest_name}`,
-          amount: Number(res.total_amount),
-          due_date: today,
-          status: "pago",
-          payment_method: method,
-          business_unit: "pousada",
-          reservation_id: res.id,
-        });
-      }
-      for (const o of tabs) {
-        await supabase.from("orders").update({ status: "fechada", payment_method: method }).eq("id", o.id);
-        if (o.total > 0)
-          await supabase.from("transactions").insert({
-            user_id, type: "receita", category: "Alimentação",
-            description: `Comanda #${o.number} — ${data.room.name} (${res.guest_name})`,
-            amount: o.total, due_date: today, status: "pago", payment_method: method,
-            business_unit: "lanchonete", order_id: o.id, reservation_id: res.id,
-          });
-      }
-    }
+    const { error } = await supabase.rpc("settle_checkout", { _reservation: res.id, _method: method });
     setSaving(false);
-    if (error) { toast.error("Não foi possível concluir o check-out."); return; }
+    if (error) { toast.error(error.message.includes("Abra o caixa") ? "Abra o caixa antes de receber." : "Não foi possível concluir o check-out."); return; }
     toast.success(`Check-out concluído. ${data.room.name} enviado para limpeza.`);
     onClose();
     onSaved();

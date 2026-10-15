@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Pedido atual: identidade original creme/branco/terracota com títulos serifados; revisar percentuais; webhook opcional em Contato; galeria por arquivos/URLs e texto do carrossel; ocupação mensal unificada em Hospedagem e remoção da duplicidade do menu.
 - [x] Tarifas e políticas em percentuais decimais: padrões 65 / 20,7 / 27,6 / 34,5 salvos e lidos; check-in recalculado com configurações da conta no servidor, adultos/crianças/pets e acréscimos por noite; 25 testes aprovados e estadia validada pela tela até leitura do total no check-out (dados temporários removidos).
 - [x] Cadastros anteriores importados do site antigo (pousadavaledosol2024.com.br): 2 quartos, configurações completas (contatos, PIX, endereço, horários, redes sociais, OTAs, acréscimo de fim de semana 10%, desconto adulto extra 34%, política de cancelamento), 8 fotos da galeria e logomarca enviadas ao armazenamento. Crianças e pets agora usam os percentuais originais; falta escolher foto de capa porque a antiga estava em formato HEIC.
 - [x] Publicação solicitada (aguarda implantação; sincronização do site externo depende do código dele)

@@ -8,11 +8,13 @@ export const getAdminConfig = createServerFn({ method: "GET" }).middleware([requ
   const account = roles?.account_id ?? context.userId;
   const [settings, templates, rooms] = await Promise.all([context.supabase.from("site_settings").select("settings").eq("user_id", account).maybeSingle(), context.supabase.from("message_templates").select("*").order("created_at"), context.supabase.from("rooms").select("id,name").eq("user_id", account).order("name")]);
   if (settings.error || templates.error || rooms.error) throw Error("Não foi possível carregar as configurações.");
-  return { userId: context.userId, accountId: account, role: roles?.role ?? "recepcao", settings: (settings.data?.settings ?? {}) as Record<string, string>, templates: templates.data ?? [], rooms: rooms.data ?? [] };
+  const { withPricingDefaults } = await import("@/lib/pricing");
+  return { userId: context.userId, accountId: account, role: roles?.role ?? "recepcao", settings: withPricingDefaults((settings.data?.settings ?? {}) as Record<string, string>), templates: templates.data ?? [], rooms: rooms.data ?? [] };
 });
 export const saveSettings = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data: Record<string, string>) => data).handler(async ({ data, context }) => {
   const { settingsSchema } = await import("@/lib/admin-config");
-  const parsed = settingsSchema.safeParse(data);
+  const { withPricingDefaults } = await import("@/lib/pricing");
+  const parsed = settingsSchema.safeParse(withPricingDefaults(data));
   if (!parsed.success) throw Error(parsed.error.issues[0]?.message ?? "Dados inválidos.");
   const { data: account } = await context.supabase.rpc("account_owner");
   if (!account) throw Error("Sem permissão.");

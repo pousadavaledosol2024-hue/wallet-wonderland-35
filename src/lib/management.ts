@@ -9,7 +9,7 @@ export const todayISO = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Amer
 export const dateISO = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const formatDate = (date: string) => date.split("-").reverse().join("/");
 export const blocksDates = (r: Reservation) => ["pre_reserva", "confirmada", "hospedado"].includes(r.status);
-export const origin = (r: Reservation) => /ical/i.test(r.source ?? "") ? `iCal · ${r.source}` : r.source || "Direto";
+export const origin = (r: Reservation) => /ical/i.test(r.source ?? "") ? r.source || "iCal" : r.source || "Direta";
 export const managementOptions = queryOptions({
   queryKey: ["management"],
   queryFn: async () => {

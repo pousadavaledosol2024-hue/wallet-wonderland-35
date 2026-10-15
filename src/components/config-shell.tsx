@@ -1,0 +1,4 @@
+import type { ReactNode } from "react";
+import { AdminHeader } from "@/components/admin-header";
+export function ConfigShell({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) { return <div className="min-h-screen bg-background"><AdminHeader /><main className="mx-auto max-w-6xl space-y-6 px-4 py-7"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-2xl font-semibold">{title}</h2>{action}</div>{children}</main></div>; }
+export const configHead = (title: string, description: string) => ({ meta: [{ title: `${title} — Pousada Vale do Sol` }, { name: "description", content: description }, { property: "og:title", content: `${title} — Pousada Vale do Sol` }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] });

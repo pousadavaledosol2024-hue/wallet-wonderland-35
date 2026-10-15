@@ -36,6 +36,13 @@
       "when": 1792030576082,
       "tag": "0004_shared_availability_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792031335089,
+      "tag": "0005_admin_settings_ical_access",
+      "breakpoints": true
     }
   ]
 }

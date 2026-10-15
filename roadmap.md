@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Pedido atual: menu principal com as 12 abas na ordem solicitada, incluindo Ocupação e prévia validada
+- [ ] Pedido atual: verificar a sincronização no código realmente publicado do site externo e informar qualquer impedimento
 - [x] Novo pedido: Caixa (abertura com operador, movimentos por pagamento, sangria/suprimento, fechamento cego e resumo de divergências)
 - [x] Novo pedido: Estoque (insumos e materiais, níveis mínimos e alertas vermelhos)
 - [x] Novo pedido: Financeiro (fluxo diário/mensal e receitas separadas por pousada/lanchonete)

@@ -39,7 +39,7 @@ function AuthPage() {
       if (error) {
         setMessage({ type: "error", text: "E-mail ou senha incorretos." });
       } else {
-        navigate({ to: "/financeiro" });
+        navigate({ to: "/visao-geral" });
       }
     } else {
       const { error } = await supabase.auth.signUp({

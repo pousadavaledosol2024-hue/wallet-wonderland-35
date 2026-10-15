@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Pousada Vale do Sol — Financeiro" },
-      { name: "description", content: "Painel financeiro da Pousada Vale do Sol: receitas, despesas e fluxo de caixa." },
-      { property: "og:title", content: "Pousada Vale do Sol — Financeiro" },
-      { property: "og:description", content: "Painel financeiro da Pousada Vale do Sol: receitas, despesas e fluxo de caixa." },
+      { title: "Pousada Vale do Sol — Gestão" },
+      { name: "description", content: "Gestão de hospedagem, reservas, lanchonete e financeiro da Pousada Vale do Sol." },
+      { property: "og:title", content: "Pousada Vale do Sol — Gestão" },
+      { property: "og:description", content: "Gestão de hospedagem, reservas, lanchonete e financeiro da Pousada Vale do Sol." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -21,7 +21,7 @@ function Index() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      navigate({ to: data.session ? "/financeiro" : "/auth", replace: true });
+      navigate({ to: data.session ? "/visao-geral" : "/auth", replace: true });
     });
   }, [navigate]);
 

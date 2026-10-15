@@ -1,8 +1,9 @@
 # Roadmap
 - [x] Lanchonete / PDV (comandas quarto/mesa, balcão, baixa de estoque por item)
 - [ ] Bloco 1: tempo real, bloqueio de calendário no site público, iCal/OTAs, tarifas por hóspede (fim de semana, adulto extra, crianças, pets P/M/G)
-- [ ] Pedido atual: Visão Geral em tempo real e Calendário com datas livres/reservadas e detalhes de hóspede/origem
-- [ ] Pedido atual: bloqueio automático no site externo (depende de acesso ao projeto do site)
+- [x] Pedido atual: Visão Geral em tempo real e Calendário com datas livres/reservadas e detalhes de hóspede/origem
+- [x] Disponibilidade compartilhada: bloqueios automáticos por reserva, liberação ao cancelar e proteção contra sobreposição
+- [ ] Pedido atual: bloqueio automático no site externo — bloqueado: código publicado usa API /api/reservations; acesso ao código desse site é necessário para conectar a disponibilidade compartilhada e validar a sincronização
 - [ ] Bloco 2: Ocupação (legenda 7 status)
 - [ ] Bloco 3: cadastro detalhado de quartos (comodidades, fotos, capacidade, tarifas)
 - [ ] Bloco 4: aba iCal/OTAs e aba Site & Galeria

@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHospedagemRouteImport } from './routes/_authenticated/hospedagem'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
+import { Route as AuthenticatedVisaoGeralRouteImport } from './routes/_authenticated/visao-geral'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
@@ -45,43 +52,70 @@ const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   path: '/pdv',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVisaoGeralRoute = AuthenticatedVisaoGeralRouteImport.update({
+  id: '/visao-geral',
+  path: '/visao-geral',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/visao-geral': typeof AuthenticatedVisaoGeralRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/visao-geral': typeof AuthenticatedVisaoGeralRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/hospedagem': typeof AuthenticatedHospedagemRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/visao-geral': typeof AuthenticatedVisaoGeralRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/financeiro' | '/hospedagem' | '/pdv'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/calendario'
+    | '/financeiro'
+    | '/hospedagem'
+    | '/pdv'
+    | '/visao-geral'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/financeiro' | '/hospedagem' | '/pdv'
+  to:
+    | '/'
+    | '/auth'
+    | '/calendario'
+    | '/financeiro'
+    | '/hospedagem'
+    | '/pdv'
+    | '/visao-geral'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/calendario'
     | '/_authenticated/financeiro'
     | '/_authenticated/hospedagem'
     | '/_authenticated/pdv'
+    | '/_authenticated/visao-geral'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/calendario': {
+      id: '/_authenticated/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/financeiro': {
       id: '/_authenticated/financeiro'
       path: '/financeiro'
@@ -134,19 +175,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPdvRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/visao-geral': {
+      id: '/_authenticated/visao-geral'
+      path: '/visao-geral'
+      fullPath: '/visao-geral'
+      preLoaderRoute: typeof AuthenticatedVisaoGeralRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHospedagemRoute: typeof AuthenticatedHospedagemRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedVisaoGeralRoute: typeof AuthenticatedVisaoGeralRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHospedagemRoute: AuthenticatedHospedagemRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedVisaoGeralRoute: AuthenticatedVisaoGeralRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

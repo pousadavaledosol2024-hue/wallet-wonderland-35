@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Pedido atual: exibir cadastros anteriores em todas as abas — verificar tabelas, registros, fotos e origem dos dados antes de conectar ou importar.
+- [ ] Pedido atual: exibir cadastros anteriores em todas as abas — bloqueado: banco conectado não contém produtos, insumos, templates ou fotos; configurações contêm apenas slogan. Quarto/reserva existentes pertencem a outra conta, sem acesso pela conta solicitante. Abas já consultam as tabelas atuais; é necessário identificar e disponibilizar a fonte do sistema anterior, sem alterar permissões ou transferir dados entre contas.
 - [x] Publicação solicitada (aguarda implantação; sincronização do site externo depende do código dele)
 - [ ] Usuário conecta o projeto ao GitHub: menu + (Plus) → GitHub → Connect project (ação manual do usuário; eu não consigo executar o push)
 - [ ] Subdomínio admin.pousadavaledosol2024.com.br: cartão de conexão reenviado; aguarda confirmação do usuário e registros de DNS no provedor

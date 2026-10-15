@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "@/components/admin-header";
 import { TransactionDialog, type Transaction } from "@/components/financeiro/transaction-dialog";
+import { CrudActions } from "@/components/crud-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -319,27 +320,7 @@ function FinanceiroPage() {
                           {t.type === "receita" ? "+" : "−"} {brl.format(Number(t.amount))}
                         </TableCell>
                         <TableCell>
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="Editar"
-                              onClick={() => {
-                                setEditing(t);
-                                setDialogOpen(true);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="Excluir"
-                              onClick={() => setDeleting(t)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          <CrudActions name={t.description} disabled={Boolean(t.cash_register_id || t.order_id || t.reservation_id)} reason="Lançamento conciliado: histórico financeiro protegido." onEdit={() => { setEditing(t); setDialogOpen(true); }} onDelete={async () => { const { data, error } = await supabase.from("transactions").delete().eq("id", t.id).select("id").single(); if (error || !data) { toast.error("Não foi possível excluir. Lançamentos conciliados são preservados."); throw Error("protected"); } toast.success("Lançamento excluído"); await load(); }} />
                         </TableCell>
                       </TableRow>
                     ))}

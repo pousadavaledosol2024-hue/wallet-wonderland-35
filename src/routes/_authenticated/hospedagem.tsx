@@ -33,6 +33,7 @@ import { registerCheckIn } from "@/lib/check-in.functions";
 import { managementOptions, useManagementRealtime } from "@/lib/management";
 import { CrudActions } from "@/components/crud-actions";
 import { deleteCatalogItem } from "@/lib/catalog.functions";
+import { ReservationDetails } from "@/components/reservation-details";
 import { MonthlyOccupancy } from "@/components/monthly-occupancy";
 
 export const Route = createFileRoute("/_authenticated/hospedagem")({
@@ -77,6 +78,7 @@ function HospedagemPage() {
   const connection = useManagementRealtime();
   const loading = false;
   const load = useCallback(() => { void qc.invalidateQueries({ queryKey: managementOptions.queryKey }); }, [qc]);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [roomDialog, setRoomDialog] = useState(false);
   const [checkInRoom, setCheckInRoom] = useState<Room | null>(null);
   const [checkOutRes, setCheckOutRes] = useState<{ room: Room; res: Reservation } | null>(null);
@@ -167,7 +169,7 @@ function HospedagemPage() {
                       <CrudActions name={room.name} disabled={config.role !== "admin"} deleteDisabled={reservations.some(r => r.room_id === room.id)} reason="Quartos vinculados a reservas são preservados; alterações de cadastro exigem administrador." onEdit={() => { setEditingRoom(room); setRoomDialog(true); }} onDelete={async () => { try { await removeCatalog({ data: { id: room.id, kind: "rooms" } }); load(); toast.success("Quarto excluído"); } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível excluir"); throw e; } }} />
                       {active && (
                         <div className="rounded-md bg-card p-2 text-sm">
-                          <p className="font-medium">{active.guest_name}</p>
+                          <p className="font-medium">{active.guest_name}</p><Button size="sm" variant="outline" onClick={() => setSelectedReservation(active)}>Gerenciar reserva</Button>
                           <p className="text-xs text-muted-foreground">
                             {fmt(active.check_in)} → {fmt(active.check_out)} · {active.guests_count} hóspede(s)
                           </p>
@@ -212,6 +214,7 @@ function HospedagemPage() {
 
       </main>
 
+      <ReservationDetails reservation={selectedReservation} roomName={rooms.find(r => r.id === selectedReservation?.room_id)?.name} onClose={() => setSelectedReservation(null)} />
       <RoomDialog room={editingRoom} open={roomDialog} onOpenChange={setRoomDialog} onSaved={load} />
       <CheckInDialog room={checkInRoom} onClose={() => setCheckInRoom(null)} onSaved={load} />
       <CheckOutDialog data={checkOutRes} onClose={() => setCheckOutRes(null)} onSaved={load} />

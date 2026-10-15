@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHospedagemRouteImport } from './routes/_authenticated/hospedagem'
+import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,18 +40,25 @@ const AuthenticatedHospedagemRoute = AuthenticatedHospedagemRouteImport.update({
   path: '/hospedagem',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
+  id: '/pdv',
+  path: '/pdv',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
+  '/pdv': typeof AuthenticatedPdvRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
+  '/pdv': typeof AuthenticatedPdvRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +67,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/hospedagem': typeof AuthenticatedHospedagemRoute
+  '/_authenticated/pdv': typeof AuthenticatedPdvRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/financeiro' | '/hospedagem'
+  fullPaths: '/' | '/auth' | '/financeiro' | '/hospedagem' | '/pdv'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/financeiro' | '/hospedagem'
+  to: '/' | '/auth' | '/financeiro' | '/hospedagem' | '/pdv'
   id:
     | '__root__'
     | '/'
@@ -72,6 +81,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/financeiro'
     | '/_authenticated/hospedagem'
+    | '/_authenticated/pdv'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,17 +127,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHospedagemRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pdv': {
+      id: '/_authenticated/pdv'
+      path: '/pdv'
+      fullPath: '/pdv'
+      preLoaderRoute: typeof AuthenticatedPdvRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHospedagemRoute: typeof AuthenticatedHospedagemRoute
+  AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHospedagemRoute: AuthenticatedHospedagemRoute,
+  AuthenticatedPdvRoute: AuthenticatedPdvRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

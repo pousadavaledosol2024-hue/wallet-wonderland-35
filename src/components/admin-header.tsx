@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BedDouble, LogOut, Sun, Wallet } from "lucide-react";
+import { BedDouble, LogOut, Sun, Utensils, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,6 +29,9 @@ export function AdminHeader() {
           </Link>
           <Link to="/hospedagem" className={tab} activeProps={{ className: "bg-muted text-foreground" }}>
             <BedDouble className="h-4 w-4" /> Hospedagem
+          </Link>
+          <Link to="/pdv" className={tab} activeProps={{ className: "bg-muted text-foreground" }}>
+            <Utensils className="h-4 w-4" /> Lanchonete / PDV
           </Link>
           <Button variant="ghost" size="sm" onClick={signOut}>
             <LogOut className="mr-2 h-4 w-4" /> Sair

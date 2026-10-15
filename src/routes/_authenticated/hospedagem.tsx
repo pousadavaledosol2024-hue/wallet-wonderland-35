@@ -485,8 +485,16 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
 function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: Reservation } | null; onClose: () => void; onSaved: () => void }) {
   const [method, setMethod] = useState("Pix");
   const [saving, setSaving] = useState(false);
+  const [tabs, setTabs] = useState<{ id: string; number: number; total: number }[]>([]);
   const res = data?.res;
-  const remaining = res ? Math.max(0, Number(res.total_amount) - Number(res.paid_amount)) : 0;
+  useEffect(() => {
+    setTabs([]);
+    if (!res) return;
+    supabase.from("orders").select("id, number, total").eq("reservation_id", res.id).eq("status", "aberta")
+      .then(({ data }) => setTabs((data ?? []).map((o) => ({ ...o, total: Number(o.total) }))));
+  }, [res]);
+  const tabsTotal = tabs.reduce((s, o) => s + o.total, 0);
+  const remaining = res ? Math.max(0, Number(res.total_amount) - Number(res.paid_amount)) + tabsTotal : 0;
 
   async function confirm() {
     if (!data || !res) return;
@@ -513,6 +521,16 @@ function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: R
           reservation_id: res.id,
         });
       }
+      for (const o of tabs) {
+        await supabase.from("orders").update({ status: "fechada", payment_method: method }).eq("id", o.id);
+        if (o.total > 0)
+          await supabase.from("transactions").insert({
+            user_id, type: "receita", category: "Alimentação",
+            description: `Comanda #${o.number} — ${data.room.name} (${res.guest_name})`,
+            amount: o.total, due_date: today, status: "pago", payment_method: method,
+            business_unit: "lanchonete", order_id: o.id, reservation_id: res.id,
+          });
+      }
     }
     setSaving(false);
     if (error) { toast.error("Não foi possível concluir o check-out."); return; }
@@ -538,6 +556,14 @@ function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: R
               <div><p className="text-muted-foreground">Já pago</p><p className="font-semibold">{brl.format(Number(res.paid_amount))}</p></div>
               <div><p className="text-muted-foreground">A receber</p><p className="font-semibold text-success">{brl.format(remaining)}</p></div>
             </div>
+            {tabs.length > 0 && (
+              <div className="rounded-md border p-3">
+                <p className="font-medium">Consumo na lanchonete</p>
+                {tabs.map((o) => (
+                  <p key={o.id} className="flex justify-between text-muted-foreground"><span>Comanda #{o.number}</span><span>{brl.format(o.total)}</span></p>
+                ))}
+              </div>
+            )}
             <div className="grid gap-1.5">
               <Label>Forma de pagamento</Label>
               <Select value={method} onValueChange={setMethod}>

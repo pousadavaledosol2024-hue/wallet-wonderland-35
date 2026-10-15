@@ -22,6 +22,13 @@
       "when": 1791936774934,
       "tag": "0002_realtime_rooms_reservations",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792025989062,
+      "tag": "0003_pdv_stock_per_item",
+      "breakpoints": true
     }
   ]
 }

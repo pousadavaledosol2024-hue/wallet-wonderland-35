@@ -21,8 +21,9 @@ export function CatalogDialog({ item, kind, onClose, onSaved }: { item: CatalogR
     if (!fields['name']?.trim()) return void toast.error("Informe o nome.");
     setBusy(true);
     try {
-      const payload = kind === "products" ? { name: fields['name'].trim(), category: fields['category']?.trim() || "Outros", price: Number(fields['price']), cost: Number(fields['cost'] || 0) } : { name: fields['name'].trim(), unit: fields['unit']?.trim() || "un", min_stock: Number(fields['min_stock']), unit_cost: Number(fields['unit_cost'] || 0), supplier: fields['supplier'] || null, business_unit: fields['business_unit'] || "lanchonete" };
-      const { data, error } = await supabase.from(kind).update(payload).eq("id", item.id).select("id").single();
+      const { data, error } = kind === "products"
+        ? await supabase.from("products").update({ name: fields['name'].trim(), category: fields['category']?.trim() || "Outros", price: Number(fields['price']), cost: Number(fields['cost'] || 0) }).eq("id", item.id).select("id").single()
+        : await supabase.from("ingredients").update({ name: fields['name'].trim(), unit: fields['unit']?.trim() || "un", min_stock: Number(fields['min_stock']), unit_cost: Number(fields['unit_cost'] || 0), supplier: fields['supplier'] || null, business_unit: fields['business_unit'] || "lanchonete" }).eq("id", item.id).select("id").single();
       if (error || !data) throw Error("Não foi possível alterar. Verifique sua permissão.");
       await onSaved(); onClose(); toast.success("Cadastro atualizado");
     } catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível alterar"); } finally { setBusy(false); }

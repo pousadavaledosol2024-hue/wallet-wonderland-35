@@ -76,7 +76,7 @@ function PdvPage() {
   }, []);
 
   const loadItems = useCallback(async (id: string | null) => {
-    if (!id) return setItems([]);
+    if (!id) return void setItems([]);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", id).order("created_at");
     setItems(data ?? []);
   }, []);
@@ -101,20 +101,20 @@ function PdvPage() {
       .insert({ user_id: await uid(), table_label: "Balcão", customer_name: "Venda de balcão" })
       .select()
       .single();
-    if (error) return toast.error("Não foi possível iniciar a venda.");
+    if (error) return void toast.error("Não foi possível iniciar a venda.");
     setOrders((o) => [...o, data]);
     setSelected(data.id);
   }
 
   async function addProduct(p: Product) {
-    if (!order) return toast.info("Selecione ou abra uma comanda primeiro.");
+    if (!order) return void toast.info("Selecione ou abra uma comanda primeiro.");
     const existing = items.find((i) => i.product_id === p.id);
     const { error } = existing
       ? await supabase.from("order_items").update({ quantity: Number(existing.quantity) + 1 }).eq("id", existing.id)
       : await supabase.from("order_items").insert({
           user_id: await uid(), order_id: order.id, product_id: p.id, product_name: p.name, unit_price: Number(p.price), quantity: 1,
         });
-    if (error) return toast.error("Não foi possível adicionar o item.");
+    if (error) return void toast.error("Não foi possível adicionar o item.");
     refresh();
   }
 
@@ -123,7 +123,7 @@ function PdvPage() {
     const { error } = q2 <= 0
       ? await supabase.from("order_items").delete().eq("id", i.id)
       : await supabase.from("order_items").update({ quantity: q2 }).eq("id", i.id);
-    if (error) return toast.error("Não foi possível alterar o item.");
+    if (error) return void toast.error("Não foi possível alterar o item.");
     refresh();
   }
 
@@ -288,14 +288,14 @@ function NewOrderDialog({ open, onClose, onCreated }: { open: boolean; onClose: 
     let payload;
     if (kind === "quarto") {
       const r = guests.find((g) => g.id === resId);
-      if (!r) return toast.error("Escolha o quarto do hóspede.");
+      if (!r) return void toast.error("Escolha o quarto do hóspede.");
       payload = { ...base, reservation_id: r.id, table_label: r.rooms?.name ?? "Quarto", customer_name: r.guest_name };
     } else {
-      if (!mesa.trim()) return toast.error("Informe o número da mesa.");
+      if (!mesa.trim()) return void toast.error("Informe o número da mesa.");
       payload = { ...base, table_label: `Mesa ${mesa.trim()}`, customer_name: name.trim() || null };
     }
     const { data, error } = await supabase.from("orders").insert(payload).select().single();
-    if (error) return toast.error("Não foi possível abrir a comanda.");
+    if (error) return void toast.error("Não foi possível abrir a comanda.");
     toast.success(`Comanda #${data.number} aberta.`);
     onCreated(data);
     onClose();
@@ -352,7 +352,7 @@ function PayDialog({ order, total, onClose, onPaid }: { order: Order | null; tot
         status: "pago", payment_method: method, business_unit: "lanchonete", order_id: order.id,
       });
     setSaving(false);
-    if (error) return toast.error("Não foi possível fechar a comanda.");
+    if (error) return void toast.error("Não foi possível fechar a comanda.");
     toast.success(`Comanda #${order.number} paga: ${brl.format(total)}`);
     onClose();
     onPaid();
@@ -390,19 +390,19 @@ function ProductDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
   useEffect(() => { if (open) { setF(empty); setRecipe([]); loadIngs(); } }, [open, loadIngs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function addIngredient() {
-    if (!newIng.name.trim()) return toast.error("Informe o nome do insumo.");
+    if (!newIng.name.trim()) return void toast.error("Informe o nome do insumo.");
     const { data, error } = await supabase.from("ingredients").insert({
       user_id: await uid(), name: newIng.name.trim(), unit: newIng.unit,
       stock_quantity: num(newIng.stock || "0"), min_stock: num(newIng.min || "0"),
     }).select().single();
-    if (error) return toast.error("Não foi possível cadastrar o insumo.");
+    if (error) return void toast.error("Não foi possível cadastrar o insumo.");
     setIngs((x) => [...x, data]);
     setRecipe((r) => [...r, { ingredient_id: data.id, quantity: "1" }]);
     setNewIng({ name: "", unit: "un", stock: "", min: "" });
   }
 
   async function save() {
-    if (!f.name.trim() || !f.price) return toast.error("Informe nome e preço.");
+    if (!f.name.trim() || !f.price) return void toast.error("Informe nome e preço.");
     setSaving(true);
     const user_id = await uid();
     const { data, error } = await supabase.from("products").insert({
@@ -416,7 +416,7 @@ function ProductDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
         );
     }
     setSaving(false);
-    if (error) return toast.error("Não foi possível salvar o produto.");
+    if (error) return void toast.error("Não foi possível salvar o produto.");
     toast.success("Produto cadastrado.");
     onClose();
     onSaved();

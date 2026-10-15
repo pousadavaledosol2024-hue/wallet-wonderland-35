@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from "@/components/ui/badge";
 import { formatDate, money, origin, type Reservation } from "@/lib/management";
 
-export function ReservationDetails({ reservation, roomName, onClose }: { reservation: Reservation | null; roomName?: string; onClose: () => void }) {
+export function ReservationDetails({ reservation, roomName, onClose }: { reservation: Reservation | null; roomName?: string | undefined; onClose: () => void }) {
   return <Dialog open={Boolean(reservation)} onOpenChange={(open) => { if (!open) onClose(); }}>
     <DialogContent className="max-h-[85vh] overflow-auto">
       <DialogHeader><DialogTitle className="break-words">{reservation?.guest_name}</DialogTitle><DialogDescription>{roomName} · Detalhes da reserva</DialogDescription></DialogHeader>

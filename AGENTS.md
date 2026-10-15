@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Dashboard and calendar share React Query options and effect-scoped Realtime subscriptions; one data model keeps occupancy consistent across views.
+- Public availability exposes only room identifiers and blocked dates, never guest or payment data; booking conflict prevention runs in the database for every writer.
+- External website integration must be verified against its actual deployed code before being reported as connected.

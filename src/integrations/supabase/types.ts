@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability_blocks: {
+        Row: {
+          check_in: string
+          check_out: string
+          id: string
+          reservation_id: string
+          room_id: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          id?: string
+          reservation_id: string
+          room_id: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          id?: string
+          reservation_id?: string
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_blocks_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: true
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_blocks_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_movements: {
         Row: {
           amount: number

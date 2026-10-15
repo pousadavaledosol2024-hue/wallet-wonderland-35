@@ -14,14 +14,14 @@ export const getAdminConfig = createServerFn({ method: "GET" }).middleware([requ
 export const saveSettings = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data: Record<string, string>) => data).handler(async ({ data, context }) => {
   const { settingsSchema } = await import("@/lib/admin-config");
   const { withPricingDefaults } = await import("@/lib/pricing");
-  const parsed = settingsSchema.safeParse(withPricingDefaults(data));
+  const parsed = settingsSchema.safeParse(data);
   if (!parsed.success) throw Error(parsed.error.issues[0]?.message ?? "Dados inválidos.");
   const { data: account } = await context.supabase.rpc("account_owner");
   if (!account) throw Error("Sem permissão.");
   const { data: existing, error: readError } = await context.supabase.from("site_settings").select("settings").eq("user_id", account).maybeSingle();
   if (readError) throw Error("Não foi possível ler as configurações.");
   const current = (existing?.settings ?? {}) as Record<string, string>;
-  const { error } = await context.supabase.from("site_settings").upsert({ user_id: account, settings: { ...current, ...parsed.data } });
+  const { error } = await context.supabase.from("site_settings").upsert({ user_id: account, settings: withPricingDefaults({ ...current, ...parsed.data }) });
   if (error) throw Error("Não foi possível salvar. Apenas administradores podem alterar o site.");
   return { ok: true };
 });

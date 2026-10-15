@@ -18,3 +18,4 @@
 - Website media uses native private storage with owner-folder write policies; do not present temporary signed preview URLs as public site assets.
 - Cash operations and order/check-out settlement run as account-authorized database RPCs with register row locks; transactions create one ledger movement and closed-shift receipts are immutable to preserve reconciliation.
 - Cash and stock screens share operations query options and effect-scoped subscriptions; stock sectors use the same ingredients and movement model as PDV recipes.
+- Stay pricing lives in the browser-safe pricing module and is recalculated by the authenticated check-in function using account settings and room rates; the UI cannot override the saved total, and existing reservation totals remain unchanged.

@@ -25,8 +25,14 @@ import {
 } from "@/components/ui/select";
 import { BedDouble, ChevronLeft, ChevronRight, LogIn, LogOut, Plus, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { configOptions } from "@/lib/admin-config";
+import { calculateStay } from "@/lib/pricing";
+import { registerCheckIn } from "@/lib/check-in.functions";
 
 export const Route = createFileRoute("/_authenticated/hospedagem")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(configOptions),
   head: () => ({
     meta: [
       { title: "Hospedagem — Pousada Vale do Sol" },
@@ -55,8 +61,6 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
 const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
-const nightsBetween = (a: string, b: string) =>
-  Math.max(1, Math.round((new Date(b + "T00:00").getTime() - new Date(a + "T00:00").getTime()) / 86400000));
 const fmt = (s: string) => s.split("-").reverse().join("/");
 
 function HospedagemPage() {
@@ -370,46 +374,39 @@ function RoomDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChan
 }
 
 function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose: () => void; onSaved: () => void }) {
+  const { data: config } = useSuspenseQuery(configOptions);
+  const checkIn = useServerFn(registerCheckIn);
   const today = iso(new Date());
-  const [f, setF] = useState({ guest_name: "", guest_document: "", guest_phone: "", guest_email: "", guests_count: "1", check_out: iso(addDays(new Date(), 1)), paid: "", source: "Direto", notes: "" });
+  const [f, setF] = useState({ guest_name: "", guest_document: "", guest_phone: "", guest_email: "", guests_count: "1", children: "0", petSmall: "0", petMedium: "0", petLarge: "0", check_out: iso(addDays(new Date(), 1)), paid: "", source: "Direto", notes: "" });
   const [saving, setSaving] = useState(false);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
 
   useEffect(() => {
-    if (room) setF((p) => ({ ...p, guest_name: "", guest_document: "", guest_phone: "", guest_email: "", guests_count: "1", check_out: iso(addDays(new Date(), 1)), paid: "", notes: "" }));
+    if (room) setF((p) => ({ ...p, guest_name: "", guest_document: "", guest_phone: "", guest_email: "", guests_count: "1", children: "0", petSmall: "0", petMedium: "0", petLarge: "0", check_out: iso(addDays(new Date(), 1)), paid: "", notes: "" }));
   }, [room]);
 
-  const nights = f.check_out > today ? nightsBetween(today, f.check_out) : 0;
-  const total = room ? nights * Number(room.daily_rate) : 0;
+  const guests = { adults: Number(f.guests_count), children: Number(f.children), petSmall: Number(f.petSmall), petMedium: Number(f.petMedium), petLarge: Number(f.petLarge) };
+  let price: ReturnType<typeof calculateStay> | null = null;
+  let priceError = "";
+  if (room) {
+    try {
+      price = calculateStay(Number(room.daily_rate), today, f.check_out, guests, config.settings);
+      if (guests.adults + guests.children > room.capacity) priceError = "A quantidade de hóspedes excede a capacidade do quarto.";
+    } catch (e) { priceError = e instanceof Error ? e.message : "Confira as tarifas."; }
+  }
 
   async function save() {
     if (!room) return;
     if (!f.guest_name.trim() || !f.guest_document.trim()) { toast.error("Informe nome e documento do hóspede."); return; }
-    if (nights < 1) { toast.error("A data de saída deve ser após hoje."); return; }
+    if (!price || priceError) { toast.error(priceError || "Confira o período."); return; }
     setSaving(true);
-    const user_id = await getUserId();
-    const { error } = await supabase.from("reservations").insert({
-      user_id,
-      room_id: room.id,
-      guest_name: f.guest_name.trim(),
-      guest_document: f.guest_document.trim(),
-      guest_phone: f.guest_phone || null,
-      guest_email: f.guest_email || null,
-      guests_count: Number(f.guests_count) || 1,
-      check_in: today,
-      check_out: f.check_out,
-      total_amount: total,
-      paid_amount: parseMoney(f.paid),
-      status: "hospedado",
-      source: f.source,
-      notes: f.notes || null,
-    });
-    if (!error) await supabase.from("rooms").update({ status: "ocupado" }).eq("id", room.id);
-    setSaving(false);
-    if (error) { toast.error("Não foi possível registrar o check-in."); return; }
-    toast.success(`Check-in de ${f.guest_name} em ${room.name}.`);
-    onClose();
-    onSaved();
+    try {
+      const result = await checkIn({ data: { roomId: room.id, checkIn: today, checkOut: f.check_out, guestName: f.guest_name, guestDocument: f.guest_document, guestPhone: f.guest_phone, guestEmail: f.guest_email, guests, paid: parseMoney(f.paid), source: f.source, notes: f.notes } });
+      toast.success(`Check-in de ${f.guest_name} em ${room.name}.`);
+      if (!result.roomStatusUpdated) toast.warning("Check-in salvo; não foi possível atualizar a governança do quarto.");
+      onClose(); onSaved();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível registrar o check-in."); }
+    finally { setSaving(false); }
   }
 
   return (
@@ -440,13 +437,19 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="gcount">Hóspedes</Label>
+              <Label htmlFor="gcount">Adultos</Label>
               <Input id="gcount" type="number" min={1} max={room?.capacity} value={f.guests_count} onChange={set("guests_count")} />
             </div>
             <div className="col-span-2 grid gap-1.5">
               <Label htmlFor="gout">Data de saída</Label>
               <Input id="gout" type="date" min={iso(addDays(new Date(), 1))} value={f.check_out} onChange={set("check_out")} />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-1.5"><Label htmlFor="gchildren">Crianças</Label><Input id="gchildren" type="number" min={0} max={room?.capacity} step={1} value={f.children} onChange={set("children")} /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {([['petSmall', 'Pets pequenos'], ['petMedium', 'Pets médios'], ['petLarge', 'Pets grandes']] as const).map(([key, label]) => <div key={key} className="grid gap-1.5"><Label htmlFor={key}>{label}</Label><Input id={key} type="number" min={0} max={100} step={1} value={f[key]} onChange={set(key)} /></div>)}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
@@ -470,11 +473,11 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
             <Textarea id="gnotes" rows={2} value={f.notes} onChange={set("notes")} />
           </div>
           <div className="rounded-md bg-muted p-3 text-sm">
-            {nights} noite(s) × {brl.format(Number(room?.daily_rate ?? 0))} = <strong>{brl.format(total)}</strong>
+            {priceError ? <p role="alert" className="text-destructive">{priceError}</p> : price && <div className="space-y-2"><div className="flex justify-between gap-3"><span>{price.nights} noite(s)</span><strong>{brl.format(price.total)}</strong></div>{price.days.map((day) => <div key={day.date} className="flex justify-between gap-3 text-xs"><span>{fmt(day.date)}{day.surcharge > 0 ? ` (+${day.surcharge.toLocaleString('pt-BR')}%)` : ''}</span><span>{brl.format(day.total)}</span></div>)}<div className="space-y-1 border-t pt-2 text-xs">{([['Adultos', 'adults'], ['Crianças', 'children'], ['Pets', 'pets']] as const).map(([label, key]) => <div key={key} className="flex justify-between"><span>{label}</span><span>{brl.format(price.days.reduce((sum, day) => sum + day[key], 0))}</span></div>)}</div></div>}
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={save} disabled={saving}>
+          <Button onClick={save} disabled={saving || !!priceError || !price}>
             <BedDouble className="mr-2 h-4 w-4" /> {saving ? "Registrando..." : "Confirmar check-in"}
           </Button>
         </DialogFooter>

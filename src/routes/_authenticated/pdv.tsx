@@ -42,8 +42,9 @@ const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 async function uid() {
-  const { data } = await supabase.auth.getUser();
-  return data.user!.id;
+  const { data, error } = await supabase.rpc("account_owner");
+  if (error || !data) throw Error("Sua sessão expirou. Entre novamente.");
+  return data;
 }
 
 function orderKind(o: Order) {

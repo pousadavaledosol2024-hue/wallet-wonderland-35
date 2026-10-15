@@ -11,6 +11,8 @@ export const saveFeed = createServerFn({ method: "POST" }).middleware([requireSu
   const { error } = await context.supabase.from("ical_feeds").insert({ ...data, user_id: account }); if (error) throw Error("Não foi possível salvar. Verifique o quarto e seu perfil de acesso."); return { ok: true };
 });
 export const updateFeed = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ id: z.string().uuid(), active: z.boolean().optional(), remove: z.boolean().optional(), rotate: z.boolean().optional() }).parse(data)).handler(async ({ context, data }) => {
+  const { data: feed, error: accessError } = await context.supabase.from("ical_feeds").select("id").eq("id", data.id).single();
+  if (accessError || !feed) throw Error("Calendário não encontrado ou sem permissão.");
   if (data.remove) { const { error: ce } = await context.supabase.from("reservations").update({ status: "cancelada" }).eq("import_feed_id", data.id).in("status", ["confirmada", "pre_reserva"]); if (ce) throw Error("Não foi possível liberar os bloqueios."); const { error } = await context.supabase.from("ical_feeds").update({ active: false, export_token: crypto.randomUUID(), import_url: "" }).eq("id", data.id); if (error) throw Error("Não foi possível desativar."); }
   else { const { error } = await context.supabase.from("ical_feeds").update(data.rotate ? { export_token: crypto.randomUUID() } : { active: data.active ?? true }).eq("id", data.id); if (error) throw Error("Não foi possível atualizar."); } return { ok: true };
 });

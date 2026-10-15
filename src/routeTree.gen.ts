@@ -17,7 +17,10 @@ import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHospedagemRouteImport } from './routes/_authenticated/hospedagem'
 import { Route as AuthenticatedIcalRouteImport } from './routes/_authenticated/ical'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
+import { Route as AuthenticatedSegurancaRouteImport } from './routes/_authenticated/seguranca'
+import { Route as AuthenticatedSiteGaleriaRouteImport } from './routes/_authenticated/site-galeria'
 import { Route as AuthenticatedVisaoGeralRouteImport } from './routes/_authenticated/visao-geral'
+import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical/$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,9 +62,25 @@ const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   path: '/pdv',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSegurancaRoute = AuthenticatedSegurancaRouteImport.update({
+  id: '/seguranca',
+  path: '/seguranca',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiteGaleriaRoute =
+  AuthenticatedSiteGaleriaRouteImport.update({
+    id: '/site-galeria',
+    path: '/site-galeria',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedVisaoGeralRoute = AuthenticatedVisaoGeralRouteImport.update({
   id: '/visao-geral',
   path: '/visao-geral',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
@@ -78,7 +97,10 @@ export interface FileRoutesByFullPath {
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/seguranca': typeof AuthenticatedSegurancaRoute
+  '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -89,7 +111,10 @@ export interface FileRoutesByTo {
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/seguranca': typeof AuthenticatedSegurancaRoute
+  '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
@@ -102,7 +127,10 @@ export interface FileRoutesById {
   '/_authenticated/hospedagem': typeof AuthenticatedHospedagemRoute
   '/_authenticated/ical': typeof AuthenticatedIcalRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/seguranca': typeof AuthenticatedSegurancaRoute
+  '/_authenticated/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/_authenticated/visao-geral': typeof AuthenticatedVisaoGeralRoute
+  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
@@ -115,7 +143,10 @@ export interface FileRouteTypes {
     | '/hospedagem'
     | '/ical'
     | '/pdv'
+    | '/seguranca'
+    | '/site-galeria'
     | '/visao-geral'
+    | '/whatsapp'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -126,7 +157,10 @@ export interface FileRouteTypes {
     | '/hospedagem'
     | '/ical'
     | '/pdv'
+    | '/seguranca'
+    | '/site-galeria'
     | '/visao-geral'
+    | '/whatsapp'
     | '/api/public/ical/$token'
   id:
     | '__root__'
@@ -138,7 +172,10 @@ export interface FileRouteTypes {
     | '/_authenticated/hospedagem'
     | '/_authenticated/ical'
     | '/_authenticated/pdv'
+    | '/_authenticated/seguranca'
+    | '/_authenticated/site-galeria'
     | '/_authenticated/visao-geral'
+    | '/_authenticated/whatsapp'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
@@ -207,11 +244,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPdvRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/seguranca': {
+      id: '/_authenticated/seguranca'
+      path: '/seguranca'
+      fullPath: '/seguranca'
+      preLoaderRoute: typeof AuthenticatedSegurancaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/site-galeria': {
+      id: '/_authenticated/site-galeria'
+      path: '/site-galeria'
+      fullPath: '/site-galeria'
+      preLoaderRoute: typeof AuthenticatedSiteGaleriaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/visao-geral': {
       id: '/_authenticated/visao-geral'
       path: '/visao-geral'
       fullPath: '/visao-geral'
       preLoaderRoute: typeof AuthenticatedVisaoGeralRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/whatsapp': {
+      id: '/_authenticated/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/ical/$token': {
@@ -230,7 +288,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHospedagemRoute: typeof AuthenticatedHospedagemRoute
   AuthenticatedIcalRoute: typeof AuthenticatedIcalRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedSegurancaRoute: typeof AuthenticatedSegurancaRoute
+  AuthenticatedSiteGaleriaRoute: typeof AuthenticatedSiteGaleriaRoute
   AuthenticatedVisaoGeralRoute: typeof AuthenticatedVisaoGeralRoute
+  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -239,7 +300,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHospedagemRoute: AuthenticatedHospedagemRoute,
   AuthenticatedIcalRoute: AuthenticatedIcalRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedSegurancaRoute: AuthenticatedSegurancaRoute,
+  AuthenticatedSiteGaleriaRoute: AuthenticatedSiteGaleriaRoute,
   AuthenticatedVisaoGeralRoute: AuthenticatedVisaoGeralRoute,
+  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

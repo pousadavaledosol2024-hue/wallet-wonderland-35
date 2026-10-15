@@ -18,6 +18,7 @@ import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHospedagemRouteImport } from './routes/_authenticated/hospedagem'
 import { Route as AuthenticatedIcalRouteImport } from './routes/_authenticated/ical'
+import { Route as AuthenticatedOcupacaoRouteImport } from './routes/_authenticated/ocupacao'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 import { Route as AuthenticatedSegurancaRouteImport } from './routes/_authenticated/seguranca'
 import { Route as AuthenticatedSiteGaleriaRouteImport } from './routes/_authenticated/site-galeria'
@@ -69,6 +70,11 @@ const AuthenticatedIcalRoute = AuthenticatedIcalRouteImport.update({
   path: '/ical',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOcupacaoRoute = AuthenticatedOcupacaoRouteImport.update({
+  id: '/ocupacao',
+  path: '/ocupacao',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   id: '/pdv',
   path: '/pdv',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
+  '/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/pdv': typeof AuthenticatedPdvRoute
   '/seguranca': typeof AuthenticatedSegurancaRoute
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
+  '/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/pdv': typeof AuthenticatedPdvRoute
   '/seguranca': typeof AuthenticatedSegurancaRoute
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/hospedagem': typeof AuthenticatedHospedagemRoute
   '/_authenticated/ical': typeof AuthenticatedIcalRoute
+  '/_authenticated/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
   '/_authenticated/seguranca': typeof AuthenticatedSegurancaRoute
   '/_authenticated/site-galeria': typeof AuthenticatedSiteGaleriaRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/hospedagem'
     | '/ical'
+    | '/ocupacao'
     | '/pdv'
     | '/seguranca'
     | '/site-galeria'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/hospedagem'
     | '/ical'
+    | '/ocupacao'
     | '/pdv'
     | '/seguranca'
     | '/site-galeria'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/_authenticated/financeiro'
     | '/_authenticated/hospedagem'
     | '/_authenticated/ical'
+    | '/_authenticated/ocupacao'
     | '/_authenticated/pdv'
     | '/_authenticated/seguranca'
     | '/_authenticated/site-galeria'
@@ -275,6 +287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIcalRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ocupacao': {
+      id: '/_authenticated/ocupacao'
+      path: '/ocupacao'
+      fullPath: '/ocupacao'
+      preLoaderRoute: typeof AuthenticatedOcupacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pdv': {
       id: '/_authenticated/pdv'
       path: '/pdv'
@@ -327,6 +346,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHospedagemRoute: typeof AuthenticatedHospedagemRoute
   AuthenticatedIcalRoute: typeof AuthenticatedIcalRoute
+  AuthenticatedOcupacaoRoute: typeof AuthenticatedOcupacaoRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
   AuthenticatedSegurancaRoute: typeof AuthenticatedSegurancaRoute
   AuthenticatedSiteGaleriaRoute: typeof AuthenticatedSiteGaleriaRoute
@@ -341,6 +361,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHospedagemRoute: AuthenticatedHospedagemRoute,
   AuthenticatedIcalRoute: AuthenticatedIcalRoute,
+  AuthenticatedOcupacaoRoute: AuthenticatedOcupacaoRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
   AuthenticatedSegurancaRoute: AuthenticatedSegurancaRoute,
   AuthenticatedSiteGaleriaRoute: AuthenticatedSiteGaleriaRoute,

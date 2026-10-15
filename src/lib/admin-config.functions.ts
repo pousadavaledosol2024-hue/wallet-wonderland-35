@@ -18,8 +18,26 @@ export const saveSettings = createServerFn({ method: "POST" }).middleware([requi
   if (!parsed.success) throw Error(parsed.error.issues[0]?.message ?? "Dados inválidos.");
   const { data: account } = await context.supabase.rpc("account_owner");
   if (!account) throw Error("Sem permissão.");
-  const { error } = await context.supabase.from("site_settings").upsert({ user_id: account, settings: parsed.data });
+  const { data: existing, error: readError } = await context.supabase.from("site_settings").select("settings").eq("user_id", account).maybeSingle();
+  if (readError) throw Error("Não foi possível ler as configurações.");
+  const current = (existing?.settings ?? {}) as Record<string, string>;
+  const { error } = await context.supabase.from("site_settings").upsert({ user_id: account, settings: { ...current, ...parsed.data } });
   if (error) throw Error("Não foi possível salvar. Apenas administradores podem alterar o site.");
+  return { ok: true };
+});
+export const updateGalleryUrl = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ url: z.string().max(2000), action: z.enum(["add", "remove"]) }).parse(data)).handler(async ({ data, context }) => {
+  const { imageUrlSchema, readGalleryUrls } = await import("@/lib/admin-config");
+  const url = imageUrlSchema.parse(data.url);
+  const { data: account } = await context.supabase.rpc("account_owner");
+  if (!account) throw Error("Sem permissão.");
+  const { data: existing, error: readError } = await context.supabase.from("site_settings").select("settings").eq("user_id", account).maybeSingle();
+  if (readError) throw Error("Não foi possível carregar a galeria.");
+  const settings = (existing?.settings ?? {}) as Record<string, string>;
+  const urls = readGalleryUrls(settings);
+  const next = data.action === "remove" ? urls.filter((item) => item !== url) : Array.from(new Set([...urls, url]));
+  if (next.length > 100) throw Error("A galeria permite até 100 URLs.");
+  const { error } = await context.supabase.from("site_settings").upsert({ user_id: account, settings: { ...settings, gallery_urls: JSON.stringify(next) } });
+  if (error) throw Error("Não foi possível atualizar a galeria. Apenas administradores podem alterar o site.");
   return { ok: true };
 });
 export const saveTemplate = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ id: z.string().uuid().optional(), title: z.string().trim().min(1).max(120), message: z.string().trim().min(1).max(5000) }).parse(data)).handler(async ({ context, data }) => {

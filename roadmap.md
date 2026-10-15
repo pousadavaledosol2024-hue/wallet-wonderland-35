@@ -1,6 +1,6 @@
 # Roadmap
 - [x] Pedido atual: menu principal com as 12 abas na ordem solicitada, incluindo Ocupação e prévia validada
-- [ ] Pedido atual: verificar a sincronização no código realmente publicado do site externo e informar qualquer impedimento
+- [x] Pedido atual: verificar o site publicado — /api/public/rooms responde 200, mas não há conexão visível com availability_blocks nem atualização ao vivo no código público
 - [x] Novo pedido: Caixa (abertura com operador, movimentos por pagamento, sangria/suprimento, fechamento cego e resumo de divergências)
 - [x] Novo pedido: Estoque (insumos e materiais, níveis mínimos e alertas vermelhos)
 - [x] Novo pedido: Financeiro (fluxo diário/mensal e receitas separadas por pousada/lanchonete)
@@ -9,7 +9,7 @@
 - [ ] Bloco 1: tempo real, bloqueio de calendário no site público, iCal/OTAs, tarifas por hóspede (fim de semana, adulto extra, crianças, pets P/M/G)
 - [x] Pedido atual: Visão Geral em tempo real e Calendário com datas livres/reservadas e detalhes de hóspede/origem
 - [x] Disponibilidade compartilhada: bloqueios automáticos por reserva, liberação ao cancelar e proteção contra sobreposição
-- [ ] Pedido atual: bloqueio automático no site externo — bloqueado: código publicado usa API /api/reservations; acesso ao código desse site é necessário para conectar a disponibilidade compartilhada e validar a sincronização
+- [ ] Pedido atual: bloqueio automático no site externo — bloqueado: site publicado consulta /api/public/rooms na própria aplicação; /api/reservations é exclusivo do administrador (401 sem sessão). É necessário acesso ao código-fonte do site externo e seu servidor para conectar a disponibilidade do painel e validar reservas/bloqueios ponta a ponta.
 - [ ] Bloco 2: Ocupação (legenda 7 status)
 - [ ] Bloco 3: cadastro detalhado de quartos (comodidades, fotos, capacidade, tarifas)
 - [x] Bloco 4: aba iCal/OTAs e aba Site & Galeria (configuração local pronta; integração externa depende do acesso ao site)

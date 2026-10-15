@@ -1,4 +1,8 @@
 # Roadmap
+- [x] Novo pedido: Caixa (abertura com operador, movimentos por pagamento, sangria/suprimento, fechamento cego e resumo de divergências)
+- [x] Novo pedido: Estoque (insumos e materiais, níveis mínimos e alertas vermelhos)
+- [x] Novo pedido: Financeiro (fluxo diário/mensal e receitas separadas por pousada/lanchonete)
+- [x] Novo pedido: apple-touch-icon em /logo.png usando a logomarca real da pousada
 - [x] Lanchonete / PDV (comandas quarto/mesa, balcão, baixa de estoque por item)
 - [ ] Bloco 1: tempo real, bloqueio de calendário no site público, iCal/OTAs, tarifas por hóspede (fim de semana, adulto extra, crianças, pets P/M/G)
 - [x] Pedido atual: Visão Geral em tempo real e Calendário com datas livres/reservadas e detalhes de hóspede/origem
@@ -6,12 +10,12 @@
 - [ ] Pedido atual: bloqueio automático no site externo — bloqueado: código publicado usa API /api/reservations; acesso ao código desse site é necessário para conectar a disponibilidade compartilhada e validar a sincronização
 - [ ] Bloco 2: Ocupação (legenda 7 status)
 - [ ] Bloco 3: cadastro detalhado de quartos (comodidades, fotos, capacidade, tarifas)
-- [ ] Bloco 4: aba iCal/OTAs e aba Site & Galeria
+- [x] Bloco 4: aba iCal/OTAs e aba Site & Galeria (configuração local pronta; integração externa depende do acesso ao site)
 - [ ] Bloco 5: aba WhatsApp (templates, preview, copiar/abrir, QR PIX)
-- [ ] Bloco 6: Segurança & Acesso (usuários com perfis Admin/Recepção, troca de senha)
-- [ ] Bloco 7: Caixa, Estoque (tela), Financeiro segregado pousada/lanchonete
+- [x] Bloco 6: Segurança & Acesso (usuários com perfis Admin/Recepção, troca de senha)
+- [x] Bloco 7: Caixa, Estoque (tela), Financeiro segregado pousada/lanchonete
 - Site público existente: www.pousadavaledosol2024.com.br (fora deste projeto)
-- [ ] Pedido atual: iCal/OTAs com importação, exportação e bloqueios
-- [ ] Pedido atual: Site & Galeria com configurações e imagens salvas
-- [ ] Pedido atual: WhatsApp com templates, edição, exclusão e prévia dinâmica
-- [ ] Pedido atual: Segurança & Acesso com perfis e troca segura de senha
+- [x] Pedido atual: iCal/OTAs com importação manual, exportação e bloqueios
+- [x] Pedido atual: Site & Galeria com configurações e imagens salvas
+- [x] Pedido atual: WhatsApp com templates, edição, exclusão e prévia dinâmica
+- [x] Pedido atual: Segurança & Acesso com perfis e troca segura de senha

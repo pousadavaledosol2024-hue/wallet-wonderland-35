@@ -292,8 +292,9 @@ function HospedagemPage() {
 }
 
 async function getUserId() {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id;
+  const { data, error } = await supabase.rpc("account_owner");
+  if (error || !data) throw Error("Sua sessão expirou. Entre novamente.");
+  return data;
 }
 
 function parseMoney(v: string) {
@@ -312,7 +313,7 @@ function RoomDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChan
     setSaving(true);
     const user_id = await getUserId();
     const { error } = await supabase.from("rooms").insert({
-      user_id: user_id!,
+      user_id,
       name: name.trim(),
       room_type: type,
       capacity: Number(capacity) || 1,
@@ -386,7 +387,7 @@ function CheckInDialog({ room, onClose, onSaved }: { room: Room | null; onClose:
     if (!f.guest_name.trim() || !f.guest_document.trim()) { toast.error("Informe nome e documento do hóspede."); return; }
     if (nights < 1) { toast.error("A data de saída deve ser após hoje."); return; }
     setSaving(true);
-    const user_id = (await getUserId())!;
+    const user_id = await getUserId();
     const { error } = await supabase.from("reservations").insert({
       user_id,
       room_id: room.id,
@@ -499,41 +500,9 @@ function CheckOutDialog({ data, onClose, onSaved }: { data: { room: Room; res: R
   async function confirm() {
     if (!data || !res) return;
     setSaving(true);
-    const user_id = (await getUserId())!;
-    const today = iso(new Date());
-    const { error } = await supabase
-      .from("reservations")
-      .update({ status: "finalizada", paid_amount: Number(res.total_amount), check_out: today > res.check_in ? today : res.check_out })
-      .eq("id", res.id);
-    if (!error) {
-      await supabase.from("rooms").update({ status: "limpeza" }).eq("id", data.room.id);
-      if (Number(res.total_amount) > 0) {
-        await supabase.from("transactions").insert({
-          user_id,
-          type: "receita",
-          category: "Hospedagem",
-          description: `Hospedagem ${data.room.name} — ${res.guest_name}`,
-          amount: Number(res.total_amount),
-          due_date: today,
-          status: "pago",
-          payment_method: method,
-          business_unit: "pousada",
-          reservation_id: res.id,
-        });
-      }
-      for (const o of tabs) {
-        await supabase.from("orders").update({ status: "fechada", payment_method: method }).eq("id", o.id);
-        if (o.total > 0)
-          await supabase.from("transactions").insert({
-            user_id, type: "receita", category: "Alimentação",
-            description: `Comanda #${o.number} — ${data.room.name} (${res.guest_name})`,
-            amount: o.total, due_date: today, status: "pago", payment_method: method,
-            business_unit: "lanchonete", order_id: o.id, reservation_id: res.id,
-          });
-      }
-    }
+    const { error } = await supabase.rpc("settle_checkout", { _reservation: res.id, _method: method });
     setSaving(false);
-    if (error) { toast.error("Não foi possível concluir o check-out."); return; }
+    if (error) { toast.error(error.message.includes("Abra o caixa") ? "Abra o caixa antes de receber." : "Não foi possível concluir o check-out."); return; }
     toast.success(`Check-out concluído. ${data.room.name} enviado para limpeza.`);
     onClose();
     onSaved();

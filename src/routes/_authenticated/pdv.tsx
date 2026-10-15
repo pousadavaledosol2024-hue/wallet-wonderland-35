@@ -42,8 +42,9 @@ const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 async function uid() {
-  const { data } = await supabase.auth.getUser();
-  return data.user!.id;
+  const { data, error } = await supabase.rpc("account_owner");
+  if (error || !data) throw Error("Sua sessão expirou. Entre novamente.");
+  return data;
 }
 
 function orderKind(o: Order) {
@@ -344,15 +345,9 @@ function PayDialog({ order, total, onClose, onPaid }: { order: Order | null; tot
   async function pay() {
     if (!order) return;
     setSaving(true);
-    const { error } = await supabase.from("orders").update({ status: "fechada", payment_method: method }).eq("id", order.id);
-    if (!error)
-      await supabase.from("transactions").insert({
-        user_id: await uid(), type: "receita", category: "Alimentação",
-        description: `Comanda #${order.number} — ${order.table_label}`, amount: total, due_date: iso(new Date()),
-        status: "pago", payment_method: method, business_unit: "lanchonete", order_id: order.id,
-      });
+    const { error } = await supabase.rpc("settle_order", { _order: order.id, _method: method });
     setSaving(false);
-    if (error) return void toast.error("Não foi possível fechar a comanda.");
+    if (error) return void toast.error(error.message.includes("Abra o caixa") ? "Abra o caixa antes de receber." : "Não foi possível receber a comanda.");
     toast.success(`Comanda #${order.number} paga: ${brl.format(total)}`);
     onClose();
     onPaid();

@@ -61,8 +61,10 @@ export type Database = {
           description: string | null
           id: string
           movement_type: string
+          operator_id: string | null
           order_id: string | null
           payment_method: string | null
+          transaction_id: string | null
           user_id: string
         }
         Insert: {
@@ -72,8 +74,10 @@ export type Database = {
           description?: string | null
           id?: string
           movement_type: string
+          operator_id?: string | null
           order_id?: string | null
           payment_method?: string | null
+          transaction_id?: string | null
           user_id: string
         }
         Update: {
@@ -83,8 +87,10 @@ export type Database = {
           description?: string | null
           id?: string
           movement_type?: string
+          operator_id?: string | null
           order_id?: string | null
           payment_method?: string | null
+          transaction_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -109,18 +115,28 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cash_movements_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cash_registers: {
         Row: {
           closed_at: string | null
           closing_amount: number | null
+          closing_report: Json | null
           created_at: string
           expected_amount: number | null
           id: string
           notes: string | null
           opened_at: string
           opening_amount: number
+          operator_id: string | null
+          operator_name: string
           status: string
           updated_at: string
           user_id: string
@@ -128,12 +144,15 @@ export type Database = {
         Insert: {
           closed_at?: string | null
           closing_amount?: number | null
+          closing_report?: Json | null
           created_at?: string
           expected_amount?: number | null
           id?: string
           notes?: string | null
           opened_at?: string
           opening_amount?: number
+          operator_id?: string | null
+          operator_name?: string
           status?: string
           updated_at?: string
           user_id: string
@@ -141,12 +160,15 @@ export type Database = {
         Update: {
           closed_at?: string | null
           closing_amount?: number | null
+          closing_report?: Json | null
           created_at?: string
           expected_amount?: number | null
           id?: string
           notes?: string | null
           opened_at?: string
           opening_amount?: number
+          operator_id?: string | null
+          operator_name?: string
           status?: string
           updated_at?: string
           user_id?: string
@@ -202,6 +224,7 @@ export type Database = {
       }
       ingredients: {
         Row: {
+          business_unit: string
           created_at: string
           id: string
           min_stock: number
@@ -214,6 +237,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          business_unit?: string
           created_at?: string
           id?: string
           min_stock?: number
@@ -226,6 +250,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          business_unit?: string
           created_at?: string
           id?: string
           min_stock?: number
@@ -851,6 +876,11 @@ export type Database = {
         Args: { _events: Json; _feed: string }
         Returns: number
       }
+      cash_method: { Args: { _method: string }; Returns: string }
+      close_cash: {
+        Args: { _counts: Json; _notes: string; _register: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -858,11 +888,32 @@ export type Database = {
         }
         Returns: boolean
       }
+      move_cash: {
+        Args: {
+          _amount: number
+          _description: string
+          _register: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      open_cash: {
+        Args: { _amount: number; _operator: string }
+        Returns: string
+      }
       set_member_role: {
         Args: {
           _member: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: undefined
+      }
+      settle_checkout: {
+        Args: { _method: string; _reservation: string }
+        Returns: undefined
+      }
+      settle_order: {
+        Args: { _method: string; _order: string }
         Returns: undefined
       }
     }

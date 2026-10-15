@@ -8,7 +8,8 @@ export const Route = createFileRoute("/api/public/ical/$token")({ server: { hand
   const { data, error } = await supabaseAdmin.from("availability_blocks").select("id,check_in,check_out,reservation_id").eq("room_id", feed.room_id);
   if (error) return new Response("Indisponível", { status: 503 });
   // Omit this provider's imported blocks to avoid an import/export echo loop.
-  const { data: own } = await supabaseAdmin.from("reservations").select("id").eq("import_feed_id", feed.id);
+  const { data: own, error: sourceError } = await supabaseAdmin.from("reservations").select("id").eq("import_feed_id", feed.id);
+  if (sourceError) return new Response("Indisponível", { status: 503 });
   const excluded = new Set(own?.map((r) => r.id));
   const { exportCalendar } = await import("@/lib/ical");
   return new Response(exportCalendar((data ?? []).filter((b) => !excluded.has(b.reservation_id))), { headers: { "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": "attachment; filename=disponibilidade.ics", "Cache-Control": "no-store" } });

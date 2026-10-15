@@ -11,3 +11,7 @@
 - [ ] Bloco 6: Segurança & Acesso (usuários com perfis Admin/Recepção, troca de senha)
 - [ ] Bloco 7: Caixa, Estoque (tela), Financeiro segregado pousada/lanchonete
 - Site público existente: www.pousadavaledosol2024.com.br (fora deste projeto)
+- [ ] Pedido atual: iCal/OTAs com importação, exportação e bloqueios
+- [ ] Pedido atual: Site & Galeria com configurações e imagens salvas
+- [ ] Pedido atual: WhatsApp com templates, edição, exclusão e prévia dinâmica
+- [ ] Pedido atual: Segurança & Acesso com perfis e troca segura de senha

@@ -1,5 +1,7 @@
 # Roadmap
 - [x] Publicação solicitada (aguarda implantação; sincronização do site externo depende do código dele)
+- [ ] Usuário conecta o projeto ao GitHub: menu + (Plus) → GitHub → Connect project (ação manual do usuário; eu não consigo executar o push)
+- [ ] Subdomínio admin.pousadavaledosol2024.com.br: cartão de conexão reenviado; aguarda confirmação do usuário e registros de DNS no provedor
 - [x] Pedido atual: menu principal com as 12 abas na ordem solicitada, incluindo Ocupação e prévia validada
 - [x] Pedido atual: verificar o site publicado — /api/public/rooms responde 200, mas não há conexão visível com availability_blocks nem atualização ao vivo no código público
 - [x] Novo pedido: Caixa (abertura com operador, movimentos por pagamento, sangria/suprimento, fechamento cego e resumo de divergências)

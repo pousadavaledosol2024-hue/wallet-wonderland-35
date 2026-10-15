@@ -35,7 +35,7 @@ export function calculateStay(baseRate: number, checkIn: string, checkOut: strin
   const start = new Date(`${checkIn}T00:00:00Z`), end = new Date(`${checkOut}T00:00:00Z`);
   const nights = (end.getTime() - start.getTime()) / 86400000;
   if (!Number.isInteger(nights) || nights < 1 || nights > 366 || start.toISOString().slice(0, 10) !== checkIn || end.toISOString().slice(0, 10) !== checkOut) throw Error("Informe um período válido de até 366 noites.");
-  const holidays = new Set((settings.holidays ?? "").split("\n").map((d) => d.trim()).filter(Boolean));
+  const holidays = new Set((settings["holidays"] ?? "").split("\n").map((d) => d.trim()).filter(Boolean));
   const adultFactor = 1 + (guests.adults - 1) * (1 - percent("extra_adult_discount"));
   const childFactor = guests.children * percent("child_rate");
   const petFactor = guests.petSmall * percent("pet_small") + guests.petMedium * percent("pet_medium") + guests.petLarge * percent("pet_large");

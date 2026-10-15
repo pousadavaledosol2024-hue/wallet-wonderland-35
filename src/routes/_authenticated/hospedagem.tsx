@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { AdminHeader } from "@/components/admin-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,16 +23,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BedDouble, ChevronLeft, ChevronRight, LogIn, LogOut, Plus, Sparkles, Users } from "lucide-react";
+import { BedDouble, LogIn, LogOut, Plus, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { configOptions } from "@/lib/admin-config";
 import { calculateStay } from "@/lib/pricing";
 import { registerCheckIn } from "@/lib/check-in.functions";
+import { managementOptions, useManagementRealtime } from "@/lib/management";
+import { MonthlyOccupancy } from "@/components/monthly-occupancy";
 
 export const Route = createFileRoute("/_authenticated/hospedagem")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(configOptions),
+  loader: async ({ context }) => { await Promise.all([context.queryClient.ensureQueryData(configOptions), context.queryClient.ensureQueryData(managementOptions)]); },
   head: () => ({
     meta: [
       { title: "Hospedagem — Pousada Vale do Sol" },
@@ -64,41 +66,15 @@ const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), 
 const fmt = (s: string) => s.split("-").reverse().join("/");
 
 function HospedagemPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [start, setStart] = useState(() => addDays(new Date(), -1));
+  const { data } = useSuspenseQuery(managementOptions);
+  const { rooms, reservations } = data;
+  const qc = useQueryClient();
+  const connection = useManagementRealtime();
+  const loading = false;
+  const load = useCallback(() => { void qc.invalidateQueries({ queryKey: managementOptions.queryKey }); }, [qc]);
   const [roomDialog, setRoomDialog] = useState(false);
   const [checkInRoom, setCheckInRoom] = useState<Room | null>(null);
   const [checkOutRes, setCheckOutRes] = useState<{ room: Room; res: Reservation } | null>(null);
-
-  const load = useCallback(async () => {
-    const [r, res] = await Promise.all([
-      supabase.from("rooms").select("*").order("name"),
-      supabase
-        .from("reservations")
-        .select("*")
-        .neq("status", "cancelada")
-        .gte("check_out", iso(addDays(new Date(), -60)))
-        .order("check_in"),
-    ]);
-    if (r.error || res.error) toast.error("Erro ao carregar hospedagem.");
-    setRooms(r.data ?? []);
-    setReservations(res.data ?? []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    load();
-    const channel = supabase
-      .channel("hospedagem")
-      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "reservations" }, () => load())
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [load]);
 
   const activeByRoom = useMemo(() => {
     const m = new Map<string, Reservation>();
@@ -112,7 +88,6 @@ function HospedagemPage() {
     return c;
   }, [rooms]);
 
-  const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(start, i)), [start]);
 
   async function setRoomStatus(room: Room, status: RoomStatus) {
     if (room.status === "ocupado" && activeByRoom.has(room.id) && status !== "ocupado") {
@@ -128,20 +103,22 @@ function HospedagemPage() {
   return (
     <div className="min-h-screen bg-background">
       <AdminHeader />
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
+      <main className="mx-auto min-w-0 max-w-6xl space-y-6 px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">Hospedagem</h2>
-            <p className="text-sm text-muted-foreground">Mapa dos quartos atualizado em tempo real</p>
+            <h2 className="text-2xl font-semibold">Hospedagem</h2>
+            <p className="text-sm text-muted-foreground">Ocupação, quartos e estadias</p>
           </div>
           <Button variant="outline" onClick={() => setRoomDialog(true)}>
             <Plus className="mr-2 h-4 w-4" /> Novo quarto
           </Button>
         </div>
 
+        <Badge variant="outline" className="gap-2"><span className={`h-2 w-2 rounded-full ${connection === "Ao vivo" ? "bg-success" : "bg-warning"}`} />{connection}</Badge>
+        <MonthlyOccupancy rooms={rooms} reservations={reservations} />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {(Object.keys(STATUS) as RoomStatus[]).map((s) => (
-            <Card key={s} className={STATUS[s].card}>
+            <Card key={s} className="bg-card">
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-2">
                   <span className={`h-3 w-3 rounded-full ${STATUS[s].dot}`} />
@@ -153,11 +130,9 @@ function HospedagemPage() {
           ))}
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Mapa de quartos</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section className="space-y-4">
+          <h3 className="text-xl font-semibold">Mapa de quartos</h3>
+          <div>
             {loading ? (
               <p className="py-8 text-center text-muted-foreground">Carregando...</p>
             ) : rooms.length === 0 ? (
@@ -170,7 +145,7 @@ function HospedagemPage() {
                   const st = room.status as RoomStatus;
                   const active = activeByRoom.get(room.id);
                   return (
-                    <div key={room.id} className={`space-y-3 rounded-lg border-2 p-4 ${STATUS[st].card}`}>
+                    <div key={room.id} className={`space-y-3 rounded-lg border bg-card p-4 shadow-card`}>
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold">{room.name}</p>
@@ -226,66 +201,9 @@ function HospedagemPage() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        {rooms.length > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Calendário de ocupação</CardTitle>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" aria-label="Semana anterior" onClick={() => setStart(addDays(start, -7))}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setStart(addDays(new Date(), -1))}>Hoje</Button>
-                <Button variant="outline" size="icon" aria-label="Próxima semana" onClick={() => setStart(addDays(start, 7))}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full border-separate border-spacing-1 text-xs">
-                <thead>
-                  <tr>
-                    <th className="min-w-28 text-left font-medium text-muted-foreground">Quarto</th>
-                    {days.map((d) => {
-                      const today = iso(d) === iso(new Date());
-                      return (
-                        <th key={iso(d)} className={`min-w-10 rounded font-medium ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-                          <div>{d.toLocaleDateString("pt-BR", { weekday: "short" }).slice(0, 3)}</div>
-                          <div>{d.getDate()}</div>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rooms.map((room) => (
-                    <tr key={room.id}>
-                      <td className="font-medium">{room.name}</td>
-                      {days.map((d) => {
-                        const day = iso(d);
-                        const r = reservations.find((x) => x.room_id === room.id && x.check_in <= day && x.check_out > day);
-                        return (
-                          <td
-                            key={day}
-                            title={r ? `${r.guest_name} (${fmt(r.check_in)} → ${fmt(r.check_out)})` : "Livre"}
-                            className={`h-8 rounded ${
-                              r ? (r.status === "finalizada" ? "bg-muted-foreground/30" : STATUS.ocupado.cell) : "bg-muted/50"
-                            }`}
-                          />
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Passe o mouse sobre uma célula para ver o hóspede. Vermelho: hospedagem ativa · Cinza: estadia finalizada.
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </main>
 
       <RoomDialog open={roomDialog} onOpenChange={setRoomDialog} onSaved={load} />

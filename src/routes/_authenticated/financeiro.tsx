@@ -77,6 +77,9 @@ function FinanceiroPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [deleting, setDeleting] = useState<Transaction | null>(null);
+  const [unit, setUnit] = useState("todos");
+  const [day, setDay] = useState("");
+  const scoped = transactions.filter((t) => (unit === "todos" || t.business_unit === unit) && (!day || t.due_date === day));
 
   const monthLabel = useMemo(
     () =>
@@ -104,6 +107,8 @@ function FinanceiroPage() {
 
   useEffect(() => {
     load();
+    const channel = supabase.channel(`finance-${year}-${month}`).on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => { void load(); }).subscribe();
+    return () => { void supabase.removeChannel(channel); };
   }, [load]);
 
   function shiftMonth(delta: number) {
@@ -113,35 +118,35 @@ function FinanceiroPage() {
   }
 
   const totals = useMemo(() => {
-    const receitas = transactions.filter((t) => t.type === "receita");
-    const despesas = transactions.filter((t) => t.type === "despesa");
+    const receitas = scoped.filter((t) => t.type === "receita");
+    const despesas = scoped.filter((t) => t.type === "despesa");
     const sum = (list: Transaction[]) => list.reduce((acc, t) => acc + Number(t.amount), 0);
     const recebido = sum(receitas.filter((t) => t.status === "pago"));
     const pago = sum(despesas.filter((t) => t.status === "pago"));
     const aReceber = sum(receitas.filter((t) => t.status === "pendente"));
     const aPagar = sum(despesas.filter((t) => t.status === "pendente"));
     return { recebido, pago, aReceber, aPagar, saldo: recebido - pago };
-  }, [transactions]);
+  }, [transactions, unit, day]);
 
   const chartData = useMemo(() => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const map = new Map<number, { dia: number; receitas: number; despesas: number }>();
-    for (let d = 1; d <= daysInMonth; d++) map.set(d, { dia: d, receitas: 0, despesas: 0 });
-    for (const t of transactions) {
+    const map = new Map<number, { dia: number; pousada: number; lanchonete: number; geral: number; despesas: number }>();
+    for (let d = 1; d <= daysInMonth; d++) map.set(d, { dia: d, pousada: 0, lanchonete: 0, geral: 0, despesas: 0 });
+    for (const t of scoped) {
       if (t.status !== "pago") continue;
       const day = Number(t.due_date.slice(8, 10));
       const entry = map.get(day);
       if (entry) {
-        if (t.type === "receita") entry.receitas += Number(t.amount);
+        if (t.type === "receita") { const key = t.business_unit === "lanchonete" ? "lanchonete" : t.business_unit === "geral" ? "geral" : "pousada"; entry[key] += Number(t.amount); }
         else entry.despesas += Number(t.amount);
       }
     }
     return Array.from(map.values());
-  }, [transactions, year, month]);
+  }, [transactions, year, month, unit, day]);
 
   const filtered = useMemo(
-    () => (filter === "todos" ? transactions : transactions.filter((t) => t.type === filter)),
-    [transactions, filter],
+    () => (filter === "todos" ? scoped : scoped.filter((t) => t.type === filter)),
+    [transactions, filter, unit, day],
   );
 
   async function handleDelete() {
@@ -179,6 +184,8 @@ function FinanceiroPage() {
           </Button>
         </div>
 
+        <div className="flex flex-wrap items-end gap-4"><div><label htmlFor="finance-unit" className="text-sm font-medium">Setor</label><select id="finance-unit" className="mt-2 block h-10 rounded-md border bg-background px-3" value={unit} onChange={(e) => setUnit(e.target.value)}><option value="todos">Todos</option><option value="pousada">Hospedagem</option><option value="lanchonete">Lanchonete</option><option value="geral">Geral</option></select></div><div><label htmlFor="finance-day" className="text-sm font-medium">Dia</label><input id="finance-day" type="date" className="mt-2 block h-10 rounded-md border bg-background px-3" value={day} onChange={(e) => setDay(e.target.value)} /></div>{day && <Button variant="outline" onClick={() => setDay("")}>Ver mês</Button>}</div>
+        <section className="grid grid-cols-2 gap-4 border-y py-4">{["pousada", "lanchonete"].map((sector) => <div key={sector}><p className="text-sm text-muted-foreground">Receitas · {sector === "pousada" ? "Hospedagem" : "Lanchonete"}</p><p className="mt-1 text-xl font-semibold">{brl.format(scoped.filter((t) => t.type === "receita" && t.status === "pago" && t.business_unit === sector).reduce((s, t) => s + Number(t.amount), 0))}</p></div>)}</section>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -246,7 +253,9 @@ function FinanceiroPage() {
                     formatter={(value) => brl.format(Number(value))}
                     labelFormatter={(label) => `Dia ${label}`}
                   />
-                  <Bar dataKey="receitas" name="Receitas" fill="var(--color-success)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="pousada" name="Hospedagem" stackId="receitas" fill="var(--color-primary)" />
+                  <Bar dataKey="lanchonete" name="Lanchonete" stackId="receitas" fill="var(--color-success)" />
+                  <Bar dataKey="geral" name="Geral" stackId="receitas" fill="var(--color-muted-foreground)" />
                   <Bar dataKey="despesas" name="Despesas" fill="var(--color-destructive)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -280,6 +289,7 @@ function FinanceiroPage() {
                       <TableHead>Data</TableHead>
                       <TableHead>Descrição</TableHead>
                       <TableHead>Categoria</TableHead>
+                      <TableHead>Setor</TableHead>
                       <TableHead>Situação</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead className="w-20" />
@@ -291,6 +301,7 @@ function FinanceiroPage() {
                         <TableCell className="whitespace-nowrap">{formatDate(t.due_date)}</TableCell>
                         <TableCell className="max-w-48 truncate">{t.description}</TableCell>
                         <TableCell>{t.category}</TableCell>
+                        <TableCell>{t.business_unit === "lanchonete" ? "Lanchonete" : t.business_unit === "pousada" ? "Hospedagem" : "Geral"}</TableCell>
                         <TableCell>
                           <Badge variant={t.status === "pago" ? "default" : "secondary"}>
                             {t.status === "pago"

@@ -41,6 +41,7 @@ export function TransactionDialog({ open, onOpenChange, transaction, onSaved }: 
   const [status, setStatus] = useState<"pago" | "pendente">("pago");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [saving, setSaving] = useState(false);
+  const [businessUnit, setBusinessUnit] = useState("pousada");
 
   useEffect(() => {
     if (open) {
@@ -51,6 +52,7 @@ export function TransactionDialog({ open, onOpenChange, transaction, onSaved }: 
       setDueDate(transaction?.due_date ?? new Date().toISOString().slice(0, 10));
       setStatus(transaction?.status === "pendente" ? "pendente" : "pago");
       setPaymentMethod(transaction?.payment_method ?? "");
+      setBusinessUnit(transaction?.business_unit ?? "pousada");
     }
   }, [open, transaction]);
 
@@ -81,6 +83,7 @@ export function TransactionDialog({ open, onOpenChange, transaction, onSaved }: 
       status,
       payment_method: paymentMethod || null,
       user_id: userData.user.id,
+      business_unit: businessUnit,
     };
 
     const { error } = transaction
@@ -104,6 +107,7 @@ export function TransactionDialog({ open, onOpenChange, transaction, onSaved }: 
           <DialogTitle>{transaction ? "Editar lançamento" : "Novo lançamento"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2"><Label htmlFor="transaction-sector">Setor</Label><select id="transaction-sector" className="h-10 w-full rounded-md border bg-background px-3" value={businessUnit} onChange={(e) => setBusinessUnit(e.target.value)}><option value="pousada">Hospedagem</option><option value="lanchonete">Lanchonete</option><option value="geral">Geral</option></select></div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Tipo</Label>

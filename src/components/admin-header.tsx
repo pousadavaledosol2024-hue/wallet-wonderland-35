@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Sun, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck } from "lucide-react";
+import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Sun, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck, Banknote, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -33,6 +33,8 @@ export function AdminHeader() {
           <Link to="/financeiro" className={tab} activeProps={{ className: "bg-muted text-foreground" }}>
             <Wallet className="h-4 w-4" /> Financeiro
           </Link>
+          <Link to="/caixa" className={tab} activeProps={{ className: "bg-muted text-foreground" }}><Banknote className="h-4 w-4" /> Caixa</Link>
+          <Link to="/estoque" className={tab} activeProps={{ className: "bg-muted text-foreground" }}><Package className="h-4 w-4" /> Estoque</Link>
           <Link to="/hospedagem" className={tab} activeProps={{ className: "bg-muted text-foreground" }}>
             <BedDouble className="h-4 w-4" /> Hospedagem
           </Link>

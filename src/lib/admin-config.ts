@@ -9,7 +9,7 @@ export const siteFields = [
   { title: "Redes sociais e OTAs", fields: [["instagram", "Instagram", "url"], ["facebook", "Facebook", "url"], ["airbnb", "Airbnb", "url"], ["booking", "Booking.com", "url"], ["triplar", "TripLar", "url"]] },
   { title: "Tarifas e políticas", fields: [["holidays", "Feriados (AAAA-MM-DD, um por linha)", "textarea"], ["weekend_percent", "Acréscimo de fim de semana (%)", "number"], ["holiday_percent", "Acréscimo de feriado (%)", "number"], ["extra_adult_discount", "Desconto por adulto extra (%)", "number"], ["child_rate", "Diária de criança (R$)", "number"], ["pet_small", "Pet pequeno (R$ / diária)", "number"], ["pet_medium", "Pet médio (R$ / diária)", "number"], ["pet_large", "Pet grande (R$ / diária)", "number"], ["cancellation", "Política de cancelamento", "textarea"]] },
 ] as const;
-const allowedKeys = new Set(siteFields.flatMap((s) => s.fields.map((f) => f[0])));
+const allowedKeys = new Set<string>(siteFields.flatMap((s) => s.fields.map((f) => f[0])));
 export const settingsSchema = z.record(z.string().max(12000)).superRefine((values, ctx) => {
   for (const [key, value] of Object.entries(values)) {
     if (!allowedKeys.has(key)) ctx.addIssue({ code: "custom", message: "Campo inválido" });

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -23,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BedDouble, LogIn, LogOut, Plus, Sparkles, Users } from "lucide-react";
+import { BedDouble, ImagePlus, LogIn, LogOut, Plus, Sparkles, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -237,18 +238,89 @@ function RoomDialog({ room, open, onOpenChange, onSaved }: { room: Room | null; 
   const [type, setType] = useState("Suíte");
   const [capacity, setCapacity] = useState("2");
   const [rate, setRate] = useState("");
+  const [doubleBeds, setDoubleBeds] = useState("1");
+  const [singleBeds, setSingleBeds] = useState("0");
+  const [amenities, setAmenities] = useState<string[]>([]);
+  const [photoPaths, setPhotoPaths] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [newPhotos, setNewPhotos] = useState<File[]>([]);
+  const [newPhotoUrls, setNewPhotoUrls] = useState<string[]>([]);
+  const [description, setDescription] = useState("");
+  const [position, setPosition] = useState("");
+  const [notes, setNotes] = useState("");
+  const [icalUrl, setIcalUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (open) { setName(room?.name ?? ""); setType(room?.room_type ?? "Suíte"); setCapacity(String(room?.capacity ?? 2)); setRate(room ? Number(room.daily_rate).toFixed(2).replace(".", ",") : ""); } }, [open, room]);
+  useEffect(() => {
+    if (open) {
+      const beds = Array.isArray(room?.bed_configuration) ? room.bed_configuration as { type: string; quantity: number }[] : [];
+      setName(room?.name ?? ""); setType(room?.room_type ?? "Suíte"); setCapacity(String(room?.capacity ?? 2));
+      setRate(room ? Number(room.daily_rate).toFixed(2).replace(".", ",") : "");
+      setDoubleBeds(String(beds.find((bed) => bed.type === "casal")?.quantity ?? 1));
+      setSingleBeds(String(beds.find((bed) => bed.type === "solteiro")?.quantity ?? 0));
+      setAmenities(room?.amenities ?? []); setPhotoPaths(room?.photo_paths ?? []); setNewPhotos([]);
+      setDescription(room?.public_description ?? ""); setPosition(room?.room_position ?? ""); setNotes(room?.notes ?? ""); setIcalUrl(room?.ical_url ?? "");
+    }
+  }, [open, room]);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all(photoPaths.map(async (path) => {
+      const { data } = await supabase.storage.from("site-gallery").createSignedUrl(path, 3600);
+      return [path, data?.signedUrl ?? ""] as const;
+    })).then((entries) => { if (active) setPhotoUrls(Object.fromEntries(entries)); });
+    return () => { active = false; };
+  }, [photoPaths]);
+
+  useEffect(() => {
+    const urls = newPhotos.map((file) => URL.createObjectURL(file));
+    setNewPhotoUrls(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [newPhotos]);
+
+  function toggleAmenity(amenity: string, checked: boolean) {
+    setAmenities((current) => checked ? [...current, amenity] : current.filter((item) => item !== amenity));
+  }
+
+  function photoUrl(path: string) {
+    return photoUrls[path] ?? "";
+  }
 
   async function save() {
     if (!name.trim()) { toast.error("Informe o nome do quarto."); return; }
     setSaving(true);
     try {
-      const payload = { name: name.trim(), room_type: type, capacity: Number(capacity), daily_rate: parseMoney(rate) };
+      const payload = {
+        name: name.trim(), room_type: type, capacity: Number(capacity), daily_rate: parseMoney(rate),
+        bed_configuration: [{ type: "casal", quantity: Number(doubleBeds) }, { type: "solteiro", quantity: Number(singleBeds) }].filter((bed) => bed.quantity > 0),
+        amenities, photo_paths: photoPaths, public_description: description.trim(), room_position: position.trim(), notes: notes.trim() || null, ical_url: icalUrl.trim(),
+      };
       if (!Number.isInteger(payload.capacity) || payload.capacity < 1) throw Error("Informe uma capacidade válida.");
-      const result = room ? await supabase.from("rooms").update(payload).eq("id", room.id).select("id").single() : await supabase.from("rooms").insert({ ...payload, user_id: await getUserId() }).select("id").single();
+      if (!Number.isInteger(Number(doubleBeds)) || Number(doubleBeds) < 0 || !Number.isInteger(Number(singleBeds)) || Number(singleBeds) < 0) throw Error("Informe quantidades válidas de camas.");
+      if (icalUrl.trim()) {
+        const parsedUrl = new URL(icalUrl.trim());
+        if (parsedUrl.protocol !== "https:") throw Error("A URL iCal deve usar HTTPS.");
+      }
+      const accountId = await getUserId();
+      const result = room
+        ? await supabase.from("rooms").update(payload).eq("id", room.id).select("id").single()
+        : await supabase.from("rooms").insert({ ...payload, user_id: accountId }).select("id").single();
       if (result.error || !result.data) throw Error("Não foi possível salvar o quarto.");
+      const roomId = result.data.id;
+      const uploaded: string[] = [];
+      for (const file of newPhotos) {
+        if (!(["image/jpeg", "image/png", "image/webp"].includes(file.type)) || file.size > 5 * 1024 * 1024) throw Error("Use imagens JPG, PNG ou WebP com até 5 MB.");
+        const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+        const path = `${accountId}/rooms/${roomId}/${crypto.randomUUID()}.${extension}`;
+        const { error } = await supabase.storage.from("site-gallery").upload(path, file, { contentType: file.type, cacheControl: "0" });
+        if (error) throw Error("Não foi possível enviar uma foto do quarto.");
+        uploaded.push(path);
+      }
+      const finalPhotos = [...photoPaths, ...uploaded];
+      const { error: photosError } = await supabase.from("rooms").update({ photo_paths: finalPhotos }).eq("id", roomId);
+      if (photosError) throw Error("Quarto salvo, mas não foi possível vincular as fotos.");
+      const removedPhotos = (room?.photo_paths ?? []).filter((path) => !photoPaths.includes(path));
+      if (removedPhotos.length) await supabase.storage.from("site-gallery").remove(removedPhotos);
       toast.success(room ? "Quarto atualizado." : "Quarto cadastrado.");
       onOpenChange(false); onSaved();
     } catch(e) { toast.error(e instanceof Error ? e.message : "Não foi possível salvar"); }
@@ -257,16 +329,18 @@ function RoomDialog({ room, open, onOpenChange, onSaved }: { room: Room | null; 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{room ? "Editar quarto" : "Novo quarto"}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-3">
+        <div className="grid gap-5">
+          <section className="grid gap-3">
+            <h3 className="font-semibold">Informações básicas</h3>
           <div className="grid gap-1.5">
             <Label htmlFor="rname">Nome</Label>
             <Input id="rname" placeholder="Suíte 1" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="grid gap-1.5">
               <Label>Tipo</Label>
               <Select value={type} onValueChange={setType}>
@@ -287,6 +361,27 @@ function RoomDialog({ room, open, onOpenChange, onSaved }: { room: Room | null; 
               <Input id="rrate" inputMode="decimal" placeholder="350,00" value={rate} onChange={(e) => setRate(e.target.value)} />
             </div>
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-1.5"><Label htmlFor="rbeds-double">Camas de casal</Label><Input id="rbeds-double" type="number" min={0} step={1} value={doubleBeds} onChange={(event) => setDoubleBeds(event.target.value)} /></div>
+            <div className="grid gap-1.5"><Label htmlFor="rbeds-single">Camas de solteiro</Label><Input id="rbeds-single" type="number" min={0} step={1} value={singleBeds} onChange={(event) => setSingleBeds(event.target.value)} /></div>
+          </div>
+          </section>
+          <section className="space-y-3 border-t pt-4">
+            <h3 className="font-semibold">Comodidades</h3>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{["Ar-condicionado", "Wi-Fi", "TV", "Frigobar", "Varanda/Sacada", "Térrea", "Andar superior"].map((amenity) => <label key={amenity} className="flex items-center gap-2 text-sm"><Checkbox checked={amenities.includes(amenity)} onCheckedChange={(checked) => toggleAmenity(amenity, checked === true)} />{amenity}</label>)}</div>
+          </section>
+          <section className="space-y-3 border-t pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">Fotos da acomodação</h3><Label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm"><ImagePlus className="h-4 w-4" />Adicionar fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(event) => { setNewPhotos((current) => [...current, ...Array.from(event.target.files ?? [])]); event.target.value = ""; }} /></Label></div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{photoPaths.map((path) => <div key={path} className="relative"><img src={photoUrl(path)} alt="Foto do quarto" className="aspect-[4/3] w-full rounded-md border object-cover" /><Button type="button" size="icon" variant="destructive" className="absolute right-1 top-1 h-8 w-8" aria-label="Remover foto" onClick={() => setPhotoPaths((current) => current.filter((item) => item !== path))}><Trash2 className="h-4 w-4" /></Button></div>)}{newPhotos.map((file, index) => <div key={`${file.name}-${index}`} className="relative"><img src={newPhotoUrls[index]} alt={file.name} className="aspect-[4/3] w-full rounded-md border object-cover" /><Button type="button" size="icon" variant="destructive" className="absolute right-1 top-1 h-8 w-8" aria-label="Remover foto nova" onClick={() => setNewPhotos((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="h-4 w-4" /></Button></div>)}</div>
+            <p className="text-xs text-muted-foreground">JPG, PNG ou WebP · máximo de 5 MB por imagem.</p>
+          </section>
+          <section className="grid gap-3 border-t pt-4">
+            <h3 className="font-semibold">Site público e integração</h3>
+            <div className="grid gap-1.5"><Label htmlFor="rdescription">Descrição pública</Label><Textarea id="rdescription" rows={4} maxLength={5000} value={description} onChange={(event) => setDescription(event.target.value)} /></div>
+            <div className="grid gap-1.5"><Label htmlFor="rposition">Posição / andar</Label><Input id="rposition" maxLength={120} placeholder="Ex.: térrea, 2º andar, vista para o jardim" value={position} onChange={(event) => setPosition(event.target.value)} /></div>
+            <div className="grid gap-1.5"><Label htmlFor="rnotes">Anotações internas</Label><Textarea id="rnotes" rows={3} maxLength={5000} value={notes} onChange={(event) => setNotes(event.target.value)} /></div>
+            <div className="grid gap-1.5"><Label htmlFor="rical">URL iCal do Airbnb/OTA</Label><Input id="rical" type="url" placeholder="https://www.airbnb.com/calendar/ical/..." value={icalUrl} onChange={(event) => setIcalUrl(event.target.value)} /><p className="text-xs text-muted-foreground">URL HTTPS salva no cadastro do quarto; o calendário pode ser gerenciado em iCal / OTAs.</p></div>
+          </section>
         </div>
         <DialogFooter>
           <Button onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>

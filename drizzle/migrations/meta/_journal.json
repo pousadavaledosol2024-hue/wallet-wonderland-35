@@ -64,6 +64,13 @@
       "when": 1792032803148,
       "tag": "0008_checkout_active_stay_status",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792108800000,
+      "tag": "0009_room_public_details",
+      "breakpoints": true
     }
   ]
 }

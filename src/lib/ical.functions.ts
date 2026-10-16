@@ -26,12 +26,26 @@ export const updateFeed = createServerFn({ method: "POST" }).middleware([require
   else { const { error } = await context.supabase.from("ical_feeds").update(data.rotate ? { export_token: crypto.randomUUID() } : { active: data.active ?? true }).eq("id", data.id); if (error) throw Error("Não foi possível atualizar."); } return { ok: true };
 });
 export const syncFeed = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ id: z.string().uuid(), content: z.string().max(2000000).optional() }).parse(data)).handler(async ({ context, data }) => {
-  const { data: feed, error } = await context.supabase.from("ical_feeds").select("*").eq("id", data.id).single(); if (error || !feed || !feed.active) throw Error("Calendário inativo ou sem acesso.");
+  const { data: result, error } = await context.supabase.functions.invoke("sync-ical", {
+    body: { feedId: data.id, ...(data.content === undefined ? {} : { content: data.content }) },
+  });
+  if (!error) return result as { ok: boolean; count: number; message?: string };
+  const { data: feed, error: feedError } = await context.supabase.from("ical_feeds").select("*").eq("id", data.id).single();
+  if (feedError || !feed || !feed.active) return { ok: false, count: 0, message: "Calendário inativo ou sem acesso." };
   try {
     const { allowedFeedUrl, parseCalendar } = await import("@/lib/ical");
     let text = data.content;
     if (text === undefined) {
-      const response = await fetch(allowedFeedUrl(feed.import_url), { redirect: "error", signal: AbortSignal.timeout(15000), headers: { Accept: "text/calendar" } });
+      let next = allowedFeedUrl(feed.import_url);
+      let response: Response | undefined;
+      for (let redirects = 0; redirects <= 5; redirects++) {
+        response = await fetch(next, { redirect: "manual", signal: AbortSignal.timeout(15000), headers: { Accept: "text/calendar", "User-Agent": "Mozilla/5.0" } });
+        if (![301, 302, 303, 307, 308].includes(response.status)) break;
+        const location = response.headers.get("location");
+        if (!location) throw Error("Redirecionamento sem destino.");
+        next = allowedFeedUrl(new URL(location, next).href);
+      }
+      if (!response || [301, 302, 303, 307, 308].includes(response.status)) throw Error("O provedor excedeu o limite de redirecionamentos.");
       if (!response.ok) throw Error("O provedor não disponibilizou o calendário.");
       const reader = response.body?.getReader(); if (!reader) throw Error("Calendário vazio.");
       const decoder = new TextDecoder(); let size = 0; text = "";

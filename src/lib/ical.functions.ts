@@ -25,39 +25,3 @@ export const updateFeed = createServerFn({ method: "POST" }).middleware([require
   if (data.remove) { const { error: ce } = await context.supabase.from("reservations").update({ status: "cancelada" }).eq("import_feed_id", data.id).in("status", ["confirmada", "pre_reserva"]); if (ce) throw Error("Não foi possível liberar os bloqueios."); const { error } = await context.supabase.from("ical_feeds").update({ active: false, export_token: crypto.randomUUID(), import_url: "" }).eq("id", data.id); if (error) throw Error("Não foi possível desativar."); }
   else { const { error } = await context.supabase.from("ical_feeds").update(data.rotate ? { export_token: crypto.randomUUID() } : { active: data.active ?? true }).eq("id", data.id); if (error) throw Error("Não foi possível atualizar."); } return { ok: true };
 });
-export const syncFeed = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => z.object({ id: z.string().uuid(), content: z.string().max(2000000).optional() }).parse(data)).handler(async ({ context, data }) => {
-  const { data: result, error } = await context.supabase.functions.invoke("sync-ical", {
-    body: { feedId: data.id, ...(data.content === undefined ? {} : { content: data.content }) },
-  });
-  if (!error) return result as { ok: boolean; count: number; message?: string };
-  const { data: feed, error: feedError } = await context.supabase.from("ical_feeds").select("*").eq("id", data.id).single();
-  if (feedError || !feed || !feed.active) return { ok: false, count: 0, message: "Calendário inativo ou sem acesso." };
-  try {
-    const { allowedFeedUrl, parseCalendar } = await import("@/lib/ical");
-    let text = data.content;
-    if (text === undefined) {
-      let next = allowedFeedUrl(feed.import_url);
-      let response: Response | undefined;
-      for (let redirects = 0; redirects <= 5; redirects++) {
-        response = await fetch(next, { redirect: "manual", signal: AbortSignal.timeout(15000), headers: { Accept: "text/calendar", "User-Agent": "Mozilla/5.0" } });
-        if (![301, 302, 303, 307, 308].includes(response.status)) break;
-        const location = response.headers.get("location");
-        if (!location) throw Error("Redirecionamento sem destino.");
-        next = allowedFeedUrl(new URL(location, next).href);
-      }
-      if (!response || [301, 302, 303, 307, 308].includes(response.status)) throw Error("O provedor excedeu o limite de redirecionamentos.");
-      if (!response.ok) throw Error("O provedor não disponibilizou o calendário.");
-      const reader = response.body?.getReader(); if (!reader) throw Error("Calendário vazio.");
-      const decoder = new TextDecoder(); let size = 0; text = "";
-      while (true) { const { done, value } = await reader.read(); if (done) break; size += value.byteLength; if (size > 2000000) { await reader.cancel(); throw Error("Arquivo acima de 2 MB."); } text += decoder.decode(value, { stream: true }); } text += decoder.decode();
-    }
-    const events = parseCalendar(text);
-    const { data: count, error: syncError } = await context.supabase.rpc("apply_ical_events", { _feed: feed.id, _events: events });
-    if (syncError) throw Error(syncError.code === "23P01" ? "Conflito de datas: há reserva existente. Nenhum bloqueio desta importação foi alterado." : "Não foi possível aplicar o calendário.");
-    return { ok: true, count: count ?? 0 };
-  } catch (err) {
-    const message = err instanceof Error && !/fetch|network|redirect/i.test(err.message) ? err.message : "Não foi possível acessar o link. Importe o arquivo .ics ou verifique o provedor.";
-    await context.supabase.from("ical_feeds").update({ last_error: message }).eq("id", feed.id);
-    return { ok: false, count: 0, message };
-  }
-});

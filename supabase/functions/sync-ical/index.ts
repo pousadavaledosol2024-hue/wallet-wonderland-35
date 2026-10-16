@@ -20,6 +20,7 @@ function validFeedUrl(value: string): URL {
 }
 
 function parseCalendar(text: string): Event[] {
+  if (!/^\s*BEGIN:VCALENDAR\s*$/im.test(text)) throw new Error("Arquivo iCal inválido.");
   const calendar = new ICAL.Component(ICAL.parse(text));
   if (calendar.name !== "vcalendar") throw new Error("Arquivo iCal inválido.");
   const components = calendar.getAllSubcomponents("vevent");
@@ -41,7 +42,10 @@ async function readCalendar(url: URL): Promise<string> {
     const response = await fetch(next, {
       redirect: "manual",
       signal: AbortSignal.timeout(15_000),
-      headers: { Accept: "text/calendar", "User-Agent": "Mozilla/5.0" },
+      headers: {
+        Accept: "text/calendar",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers.get("location");
@@ -63,7 +67,9 @@ async function readCalendar(url: URL): Promise<string> {
       if (size > MAX_BYTES) { await reader.cancel(); throw new Error("Arquivo acima de 2 MB."); }
       text += decoder.decode(value, { stream: true });
     }
-    return text + decoder.decode();
+    const calendarText = text + decoder.decode();
+    if (!/^\s*BEGIN:VCALENDAR\s*$/im.test(calendarText)) throw new Error("Arquivo iCal inválido.");
+    return calendarText;
   }
   throw new Error("O provedor excedeu o limite de redirecionamentos.");
 }

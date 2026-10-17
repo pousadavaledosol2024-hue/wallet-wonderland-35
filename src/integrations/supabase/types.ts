@@ -592,54 +592,36 @@ export type Database = {
       }
       rooms: {
         Row: {
-          amenities: string[]
-          bed_configuration: Json
           capacity: number
           created_at: string
           daily_rate: number
           id: string
-          ical_url: string
           name: string
           notes: string | null
-          photo_paths: string[]
-          public_description: string
-          room_position: string
           room_type: string
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          amenities?: string[]
-          bed_configuration?: Json
           capacity?: number
           created_at?: string
           daily_rate?: number
           id?: string
-          ical_url?: string
           name: string
           notes?: string | null
-          photo_paths?: string[]
-          public_description?: string
-          room_position?: string
           room_type?: string
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          amenities?: string[]
-          bed_configuration?: Json
           capacity?: number
           created_at?: string
           daily_rate?: number
           id?: string
-          ical_url?: string
           name?: string
           notes?: string | null
-          photo_paths?: string[]
-          public_description?: string
-          room_position?: string
           room_type?: string
           status?: string
           updated_at?: string

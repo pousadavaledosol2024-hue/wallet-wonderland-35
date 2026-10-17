@@ -71,6 +71,13 @@
       "when": 1792108800000,
       "tag": "0009_room_public_details",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792198291006,
+      "tag": "0010_ensure_room_public_details",
+      "breakpoints": true
     }
   ]
 }

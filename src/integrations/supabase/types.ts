@@ -597,8 +597,8 @@ export type Database = {
           capacity: number
           created_at: string
           daily_rate: number
-          id: string
           ical_url: string
+          id: string
           name: string
           notes: string | null
           photo_paths: string[]
@@ -615,8 +615,8 @@ export type Database = {
           capacity?: number
           created_at?: string
           daily_rate?: number
-          id?: string
           ical_url?: string
+          id?: string
           name: string
           notes?: string | null
           photo_paths?: string[]
@@ -633,8 +633,8 @@ export type Database = {
           capacity?: number
           created_at?: string
           daily_rate?: number
-          id?: string
           ical_url?: string
+          id?: string
           name?: string
           notes?: string | null
           photo_paths?: string[]

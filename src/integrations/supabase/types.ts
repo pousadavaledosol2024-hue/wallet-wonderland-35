@@ -899,6 +899,22 @@ export type Database = {
         Args: { _counts: Json; _notes: string; _register: string }
         Returns: Json
       }
+      create_public_pre_reservation: {
+        Args: {
+          _email: string
+          _from: string
+          _guests: number
+          _id: string
+          _name: string
+          _notes: string
+          _phone: string
+          _revision: string
+          _room: string
+          _to: string
+          _total: number
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -918,6 +934,10 @@ export type Database = {
       open_cash: {
         Args: { _amount: number; _operator: string }
         Returns: string
+      }
+      public_site_snapshot: {
+        Args: { _from: string; _to: string }
+        Returns: Json
       }
       set_member_role: {
         Args: {

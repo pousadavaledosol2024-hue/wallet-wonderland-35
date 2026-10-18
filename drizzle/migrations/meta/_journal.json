@@ -78,6 +78,13 @@
       "when": 1792198291006,
       "tag": "0010_ensure_room_public_details",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792283254277,
+      "tag": "0011_public_site_booking_api",
+      "breakpoints": true
     }
   ]
 }

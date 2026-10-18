@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { allowedOrigins, staySchema, bookingSchema, quoteStay, publicSettings, type Snapshot } from '@/lib/public-api/contract';
-import { signQuote, verifyQuote } from '@/lib/public-api/http.server';
+import { signQuote, verifyQuote, preflight } from '@/lib/public-api/http.server';
 const stay = { room_id: '11111111-1111-4111-8111-111111111111', check_in: '2026-10-19', check_out: '2026-10-20', guests: { adults: 1, children: 1, petSmall: 1, petMedium: 0, petLarge: 0 } };
 const snapshot: Snapshot = { rooms: [{ id: stay.room_id, name: 'Suíte', capacity: 4, daily_rate: 165, bookable: true, revision: 'a'.repeat(32), amenities: [], bed_configuration: [], room_position: '', public_description: '', room_type: 'suite' }], settings: {}, blocks: [] };
 describe('Public booking contracts', () => {
@@ -12,6 +12,17 @@ describe('Public booking contracts', () => {
   it('rejects caller-provided totals and status', () => { expect(bookingSchema.safeParse({ quote_token: 'x'.repeat(30), guest_name: 'Teste', guest_phone: '5513999999999', total: 1, status: 'confirmada' }).success).toBe(false); });
   it('never exposes webhook and PIX secrets', () => { expect(publicSettings({ name: 'Pousada Vale do Sol', whatsapp_webhook: 'secret', pix_key: 'secret', private_value: 'secret' })).toEqual({ name: 'Pousada Vale do Sol' }); });
   it('only allows the public and new admin origins', () => { expect(allowedOrigins.has('https://pousadavaledosol2024.com.br')).toBe(true); expect(allowedOrigins.has('https://admin.pousadavaledosol2024.com.br')).toBe(true); expect(allowedOrigins.has('https://attacker.example')).toBe(false); });
+  it('returns exact allowed origin on preflight without credentials', () => {
+    const response = preflight(new Request('https://admin.pousadavaledosol2024.com.br/api/public/reservations', { method: 'OPTIONS', headers: { Origin: 'https://pousadavaledosol2024.com.br' } }));
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://pousadavaledosol2024.com.br');
+    expect(response.headers.get('Access-Control-Allow-Credentials')).toBeNull();
+  });
+  it('rejects unapproved origin at the preflight handler', () => {
+    const response = preflight(new Request('https://admin.pousadavaledosol2024.com.br/api/public/reservations', { method: 'OPTIONS', headers: { Origin: 'https://attacker.example' } }));
+    expect(response.status).toBe(403);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
   it('rejects tampered signed quotes', async () => {
     const previous = process.env['PUBLIC_BOOKING_SIGNING_SECRET']; process.env['PUBLIC_BOOKING_SIGNING_SECRET'] = 'test-only-secret';
     try {

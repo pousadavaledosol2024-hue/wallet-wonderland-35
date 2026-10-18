@@ -48,3 +48,4 @@ A cotação assinada autoriza somente sua estadia/preço. Reenvie **a mesma cota
 - 400 dados inválidos; 401 cotação inválida/expirada; 403 origem não permitida; 409 datas indisponíveis/tarifas alteradas; 413 pedido grande; 415 formato incorreto; 503 falha temporária.
 - A API pública não verifica identidade do visitante nem implementa proteção anti-robô. Para exposição com tráfego alto, planeje proteção antiabuso adicional antes de divulgar o formulário.
 - O banco permanece protegido: leituras públicas passam por função com projeção estrita e conta fixa; a função de gravação só é executável pelo serviço interno, depois da verificação da cotação. Não use chaves privadas no código do GitHub.
+- A prévia local intercepta OPTIONS antes dos handlers; os handlers CORS foram testados diretamente, mas a pré-verificação cross-origin na hospedagem publicada precisa ser validada após publicação.

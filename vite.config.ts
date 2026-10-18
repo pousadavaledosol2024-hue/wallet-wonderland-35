@@ -7,16 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  vite: {
-    server: {
-      cors: {
-        origin: ['https://pousadavaledosol2024.com.br', 'https://www.pousadavaledosol2024.com.br', 'https://admin.pousadavaledosol2024.com.br'],
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Content-Type'],
-        preflightContinue: true,
-      },
-    },
-  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

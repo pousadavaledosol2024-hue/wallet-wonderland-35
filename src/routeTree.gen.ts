@@ -24,6 +24,11 @@ import { Route as AuthenticatedSegurancaRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSiteGaleriaRouteImport } from './routes/_authenticated/site-galeria'
 import { Route as AuthenticatedVisaoGeralRouteImport } from './routes/_authenticated/visao-geral'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
+import { Route as ApiPublicAvailabilityRouteImport } from './routes/api/public/availability'
+import { Route as ApiPublicPricingRouteImport } from './routes/api/public/pricing'
+import { Route as ApiPublicReservationsRouteImport } from './routes/api/public/reservations'
+import { Route as ApiPublicRoomsRouteImport } from './routes/api/public/rooms'
+import { Route as ApiPublicSettingsRouteImport } from './routes/api/public/settings'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical/$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -101,6 +106,31 @@ const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicAvailabilityRoute = ApiPublicAvailabilityRouteImport.update({
+  id: '/api/public/availability',
+  path: '/api/public/availability',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPricingRoute = ApiPublicPricingRouteImport.update({
+  id: '/api/public/pricing',
+  path: '/api/public/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicReservationsRoute = ApiPublicReservationsRouteImport.update({
+  id: '/api/public/reservations',
+  path: '/api/public/reservations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRoomsRoute = ApiPublicRoomsRouteImport.update({
+  id: '/api/public/rooms',
+  path: '/api/public/rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSettingsRoute = ApiPublicSettingsRouteImport.update({
+  id: '/api/public/settings',
+  path: '/api/public/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
   id: '/api/public/ical/$token',
   path: '/api/public/ical/$token',
@@ -122,6 +152,11 @@ export interface FileRoutesByFullPath {
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/pricing': typeof ApiPublicPricingRoute
+  '/api/public/reservations': typeof ApiPublicReservationsRoute
+  '/api/public/rooms': typeof ApiPublicRoomsRoute
+  '/api/public/settings': typeof ApiPublicSettingsRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -139,6 +174,11 @@ export interface FileRoutesByTo {
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/pricing': typeof ApiPublicPricingRoute
+  '/api/public/reservations': typeof ApiPublicReservationsRoute
+  '/api/public/rooms': typeof ApiPublicRoomsRoute
+  '/api/public/settings': typeof ApiPublicSettingsRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
@@ -158,6 +198,11 @@ export interface FileRoutesById {
   '/_authenticated/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/_authenticated/visao-geral': typeof AuthenticatedVisaoGeralRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/availability': typeof ApiPublicAvailabilityRoute
+  '/api/public/pricing': typeof ApiPublicPricingRoute
+  '/api/public/reservations': typeof ApiPublicReservationsRoute
+  '/api/public/rooms': typeof ApiPublicRoomsRoute
+  '/api/public/settings': typeof ApiPublicSettingsRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
@@ -177,6 +222,11 @@ export interface FileRouteTypes {
     | '/site-galeria'
     | '/visao-geral'
     | '/whatsapp'
+    | '/api/public/availability'
+    | '/api/public/pricing'
+    | '/api/public/reservations'
+    | '/api/public/rooms'
+    | '/api/public/settings'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -194,6 +244,11 @@ export interface FileRouteTypes {
     | '/site-galeria'
     | '/visao-geral'
     | '/whatsapp'
+    | '/api/public/availability'
+    | '/api/public/pricing'
+    | '/api/public/reservations'
+    | '/api/public/rooms'
+    | '/api/public/settings'
     | '/api/public/ical/$token'
   id:
     | '__root__'
@@ -212,6 +267,11 @@ export interface FileRouteTypes {
     | '/_authenticated/site-galeria'
     | '/_authenticated/visao-geral'
     | '/_authenticated/whatsapp'
+    | '/api/public/availability'
+    | '/api/public/pricing'
+    | '/api/public/reservations'
+    | '/api/public/rooms'
+    | '/api/public/settings'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
@@ -219,6 +279,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicAvailabilityRoute: typeof ApiPublicAvailabilityRoute
+  ApiPublicPricingRoute: typeof ApiPublicPricingRoute
+  ApiPublicReservationsRoute: typeof ApiPublicReservationsRoute
+  ApiPublicRoomsRoute: typeof ApiPublicRoomsRoute
+  ApiPublicSettingsRoute: typeof ApiPublicSettingsRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
 
@@ -329,6 +394,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/availability': {
+      id: '/api/public/availability'
+      path: '/api/public/availability'
+      fullPath: '/api/public/availability'
+      preLoaderRoute: typeof ApiPublicAvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/pricing': {
+      id: '/api/public/pricing'
+      path: '/api/public/pricing'
+      fullPath: '/api/public/pricing'
+      preLoaderRoute: typeof ApiPublicPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/reservations': {
+      id: '/api/public/reservations'
+      path: '/api/public/reservations'
+      fullPath: '/api/public/reservations'
+      preLoaderRoute: typeof ApiPublicReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rooms': {
+      id: '/api/public/rooms'
+      path: '/api/public/rooms'
+      fullPath: '/api/public/rooms'
+      preLoaderRoute: typeof ApiPublicRoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/settings': {
+      id: '/api/public/settings'
+      path: '/api/public/settings'
+      fullPath: '/api/public/settings'
+      preLoaderRoute: typeof ApiPublicSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ical/$token': {
       id: '/api/public/ical/$token'
       path: '/api/public/ical/$token'
@@ -376,6 +476,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicAvailabilityRoute: ApiPublicAvailabilityRoute,
+  ApiPublicPricingRoute: ApiPublicPricingRoute,
+  ApiPublicReservationsRoute: ApiPublicReservationsRoute,
+  ApiPublicRoomsRoute: ApiPublicRoomsRoute,
+  ApiPublicSettingsRoute: ApiPublicSettingsRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
 export const routeTree = rootRouteImport

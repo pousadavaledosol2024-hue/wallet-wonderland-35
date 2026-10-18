@@ -22,3 +22,5 @@
 - Stay pricing lives in the browser-safe pricing module and is recalculated by the authenticated check-in function using account settings and room rates; the UI cannot override the saved total, and existing reservation totals remain unchanged.
 - Management item controls use shared CrudActions confirmation dialogs; product removal archives the catalog entry, catalog deletion checks account/admin access, and immutable operational history exposes disabled controls rather than destructive writes.
 - Reservation contact edits preserve dates and pricing; cancellation retains history and is limited to direct unstarted, unpaid reservations without orders, while imported reservations remain managed by their feed.
+- Public site APIs use a narrow account-scoped snapshot RPC and an HMAC-authorized, service-only booking RPC; signed quotes bind pricing and idempotency, while room locks and existing reservation triggers prevent concurrent overlap.
+- Public API contracts and consumption instructions live in docs/public-site-api.md; private media, arbitrary settings, guest records and payment details are never included in anonymous HTTP responses.

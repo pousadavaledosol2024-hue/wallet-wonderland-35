@@ -175,6 +175,163 @@ export type Database = {
         }
         Relationships: []
       }
+      hr_employees: {
+        Row: {
+          account_id: string
+          active: boolean
+          address: string
+          auth_user_id: string | null
+          birth_date: string | null
+          cpf: string
+          created_at: string
+          email: string
+          hired_on: string
+          id: string
+          job_title: string
+          name: string
+          phone: string
+          salary: number
+          shift_start: string
+          sunday_interval: number
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          active?: boolean
+          address?: string
+          auth_user_id?: string | null
+          birth_date?: string | null
+          cpf?: string
+          created_at?: string
+          email?: string
+          hired_on: string
+          id?: string
+          job_title: string
+          name: string
+          phone?: string
+          salary?: number
+          shift_start?: string
+          sunday_interval?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          active?: boolean
+          address?: string
+          auth_user_id?: string | null
+          birth_date?: string | null
+          cpf?: string
+          created_at?: string
+          email?: string
+          hired_on?: string
+          id?: string
+          job_title?: string
+          name?: string
+          phone?: string
+          salary?: number
+          shift_start?: string
+          sunday_interval?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hr_entries: {
+        Row: {
+          account_id: string
+          created_at: string
+          created_by: string
+          employee_id: string | null
+          id: string
+          kind: string
+          payload: Json
+          period: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          created_by: string
+          employee_id?: string | null
+          id?: string
+          kind: string
+          payload?: Json
+          period?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          created_by?: string
+          employee_id?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          period?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_entries_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "hr_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hr_punches: {
+        Row: {
+          account_id: string
+          accuracy: number
+          actor_id: string
+          employee_id: string
+          id: string
+          kind: string
+          latitude: number
+          longitude: number
+          receipt_hash: string
+          recorded_at: string
+          sequence: number
+        }
+        Insert: {
+          account_id: string
+          accuracy: number
+          actor_id: string
+          employee_id: string
+          id?: string
+          kind: string
+          latitude: number
+          longitude: number
+          receipt_hash?: string
+          recorded_at?: string
+          sequence?: never
+        }
+        Update: {
+          account_id?: string
+          accuracy?: number
+          actor_id?: string
+          employee_id?: string
+          id?: string
+          kind?: string
+          latitude?: number
+          longitude?: number
+          receipt_hash?: string
+          recorded_at?: string
+          sequence?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hr_punches_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "hr_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ical_feeds: {
         Row: {
           active: boolean
@@ -921,6 +1078,35 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      hr_is_admin: { Args: { _account: string }; Returns: boolean }
+      hr_record_punch: {
+        Args: {
+          _accuracy: number
+          _employee: string
+          _kind: string
+          _latitude: number
+          _longitude: number
+        }
+        Returns: {
+          account_id: string
+          accuracy: number
+          actor_id: string
+          employee_id: string
+          id: string
+          kind: string
+          latitude: number
+          longitude: number
+          receipt_hash: string
+          recorded_at: string
+          sequence: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "hr_punches"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       move_cash: {
         Args: {

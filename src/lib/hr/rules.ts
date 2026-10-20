@@ -32,7 +32,7 @@ export function computePayroll(employee: Employee, month: string, punches: Punch
   let workedMinutes = 0, expectedMinutes = 0, absenceMinutes = 0, extraMinutes = 0;
   for (const shift of shifts.filter(s => s.employeeId === employee.id && s.date.startsWith(month) && !s.off)) {
     if (shift.date < employee.hired_on) continue;
-    const leave = entries.find(e => e.employee_id === employee.id && (e.kind === 'absence' || e.kind === 'vacation') && e.status === 'approved' && typeof (e.payload as Record<string, unknown>).start === 'string' && String((e.payload as Record<string, unknown>).start) <= shift.date && String((e.payload as Record<string, unknown>).end) >= shift.date);
+    const leave = entries.find(e => e.employee_id === employee.id && (e.kind === 'absence' || e.kind === 'vacation') && e.status === 'approved' && typeof (e.payload as Record<string, unknown>)['start'] === 'string' && String((e.payload as Record<string, unknown>)['start']) <= shift.date && String((e.payload as Record<string, unknown>)['end']) >= shift.date);
     if (shift.date > today()) { issues.push('Há jornadas futuras nesta competência.'); continue; }
     expectedMinutes += shift.minutes;
     if (leave) { workedMinutes += shift.minutes; continue; }

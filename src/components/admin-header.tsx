@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck, Banknote, Package } from "lucide-react";
+import { BedDouble, CalendarDays, LayoutDashboard, LogOut, Utensils, Wallet, Link2, ImageIcon, MessageCircle, ShieldCheck, Banknote, Package, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +17,7 @@ export function AdminHeader() {
     { to: "/caixa", label: "Caixa", icon: Banknote },
     { to: "/estoque", label: "Estoque", icon: Package },
     { to: "/financeiro", label: "Financeiro", icon: Wallet },
+    { to: "/rh", label: "Recursos Humanos", icon: Users },
     { to: "/ical", label: "iCal/OTAs", icon: Link2 },
     { to: "/site-galeria", label: "Site & Galeria", icon: ImageIcon },
     { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },

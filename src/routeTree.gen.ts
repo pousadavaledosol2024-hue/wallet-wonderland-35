@@ -14,12 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/caixa'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
+import { Route as AuthenticatedColaboradorRouteImport } from './routes/_authenticated/colaborador'
 import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticated/estoque'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedHospedagemRouteImport } from './routes/_authenticated/hospedagem'
 import { Route as AuthenticatedIcalRouteImport } from './routes/_authenticated/ical'
 import { Route as AuthenticatedOcupacaoRouteImport } from './routes/_authenticated/ocupacao'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
+import { Route as AuthenticatedRhRouteImport } from './routes/_authenticated/rh'
 import { Route as AuthenticatedSegurancaRouteImport } from './routes/_authenticated/seguranca'
 import { Route as AuthenticatedSiteGaleriaRouteImport } from './routes/_authenticated/site-galeria'
 import { Route as AuthenticatedVisaoGeralRouteImport } from './routes/_authenticated/visao-geral'
@@ -55,6 +57,12 @@ const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
   path: '/calendario',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedColaboradorRoute =
+  AuthenticatedColaboradorRouteImport.update({
+    id: '/colaborador',
+    path: '/colaborador',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEstoqueRoute = AuthenticatedEstoqueRouteImport.update({
   id: '/estoque',
   path: '/estoque',
@@ -83,6 +91,11 @@ const AuthenticatedOcupacaoRoute = AuthenticatedOcupacaoRouteImport.update({
 const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   id: '/pdv',
   path: '/pdv',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRhRoute = AuthenticatedRhRouteImport.update({
+  id: '/rh',
+  path: '/rh',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSegurancaRoute = AuthenticatedSegurancaRouteImport.update({
@@ -142,12 +155,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/caixa': typeof AuthenticatedCaixaRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
+  '/colaborador': typeof AuthenticatedColaboradorRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
   '/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/rh': typeof AuthenticatedRhRoute
   '/seguranca': typeof AuthenticatedSegurancaRoute
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
@@ -164,12 +179,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/caixa': typeof AuthenticatedCaixaRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
+  '/colaborador': typeof AuthenticatedColaboradorRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/hospedagem': typeof AuthenticatedHospedagemRoute
   '/ical': typeof AuthenticatedIcalRoute
   '/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/rh': typeof AuthenticatedRhRoute
   '/seguranca': typeof AuthenticatedSegurancaRoute
   '/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/visao-geral': typeof AuthenticatedVisaoGeralRoute
@@ -188,12 +205,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/caixa': typeof AuthenticatedCaixaRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
+  '/_authenticated/colaborador': typeof AuthenticatedColaboradorRoute
   '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/hospedagem': typeof AuthenticatedHospedagemRoute
   '/_authenticated/ical': typeof AuthenticatedIcalRoute
   '/_authenticated/ocupacao': typeof AuthenticatedOcupacaoRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/rh': typeof AuthenticatedRhRoute
   '/_authenticated/seguranca': typeof AuthenticatedSegurancaRoute
   '/_authenticated/site-galeria': typeof AuthenticatedSiteGaleriaRoute
   '/_authenticated/visao-geral': typeof AuthenticatedVisaoGeralRoute
@@ -212,12 +231,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/caixa'
     | '/calendario'
+    | '/colaborador'
     | '/estoque'
     | '/financeiro'
     | '/hospedagem'
     | '/ical'
     | '/ocupacao'
     | '/pdv'
+    | '/rh'
     | '/seguranca'
     | '/site-galeria'
     | '/visao-geral'
@@ -234,12 +255,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/caixa'
     | '/calendario'
+    | '/colaborador'
     | '/estoque'
     | '/financeiro'
     | '/hospedagem'
     | '/ical'
     | '/ocupacao'
     | '/pdv'
+    | '/rh'
     | '/seguranca'
     | '/site-galeria'
     | '/visao-geral'
@@ -257,12 +280,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/caixa'
     | '/_authenticated/calendario'
+    | '/_authenticated/colaborador'
     | '/_authenticated/estoque'
     | '/_authenticated/financeiro'
     | '/_authenticated/hospedagem'
     | '/_authenticated/ical'
     | '/_authenticated/ocupacao'
     | '/_authenticated/pdv'
+    | '/_authenticated/rh'
     | '/_authenticated/seguranca'
     | '/_authenticated/site-galeria'
     | '/_authenticated/visao-geral'
@@ -324,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/colaborador': {
+      id: '/_authenticated/colaborador'
+      path: '/colaborador'
+      fullPath: '/colaborador'
+      preLoaderRoute: typeof AuthenticatedColaboradorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/estoque': {
       id: '/_authenticated/estoque'
       path: '/estoque'
@@ -364,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/pdv'
       fullPath: '/pdv'
       preLoaderRoute: typeof AuthenticatedPdvRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rh': {
+      id: '/_authenticated/rh'
+      path: '/rh'
+      fullPath: '/rh'
+      preLoaderRoute: typeof AuthenticatedRhRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/seguranca': {
@@ -442,12 +481,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCaixaRoute: typeof AuthenticatedCaixaRoute
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
+  AuthenticatedColaboradorRoute: typeof AuthenticatedColaboradorRoute
   AuthenticatedEstoqueRoute: typeof AuthenticatedEstoqueRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedHospedagemRoute: typeof AuthenticatedHospedagemRoute
   AuthenticatedIcalRoute: typeof AuthenticatedIcalRoute
   AuthenticatedOcupacaoRoute: typeof AuthenticatedOcupacaoRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedRhRoute: typeof AuthenticatedRhRoute
   AuthenticatedSegurancaRoute: typeof AuthenticatedSegurancaRoute
   AuthenticatedSiteGaleriaRoute: typeof AuthenticatedSiteGaleriaRoute
   AuthenticatedVisaoGeralRoute: typeof AuthenticatedVisaoGeralRoute
@@ -457,12 +498,14 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCaixaRoute: AuthenticatedCaixaRoute,
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
+  AuthenticatedColaboradorRoute: AuthenticatedColaboradorRoute,
   AuthenticatedEstoqueRoute: AuthenticatedEstoqueRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedHospedagemRoute: AuthenticatedHospedagemRoute,
   AuthenticatedIcalRoute: AuthenticatedIcalRoute,
   AuthenticatedOcupacaoRoute: AuthenticatedOcupacaoRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedRhRoute: AuthenticatedRhRoute,
   AuthenticatedSegurancaRoute: AuthenticatedSegurancaRoute,
   AuthenticatedSiteGaleriaRoute: AuthenticatedSiteGaleriaRoute,
   AuthenticatedVisaoGeralRoute: AuthenticatedVisaoGeralRoute,

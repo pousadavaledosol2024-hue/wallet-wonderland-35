@@ -24,3 +24,5 @@
 - Reservation contact edits preserve dates and pricing; cancellation retains history and is limited to direct unstarted, unpaid reservations without orders, while imported reservations remain managed by their feed.
 - Public site APIs use a narrow account-scoped snapshot RPC and an HMAC-authorized, service-only booking RPC; signed quotes bind pricing and idempotency, while room locks and existing reservation triggers prevent concurrent overlap.
 - Public API contracts and consumption instructions live in docs/public-site-api.md; private media, arbitrary settings, guest records and payment details are never included in anonymous HTTP responses.
+- HR uses account/admin-authorized server functions, employee-linked read policies and private employee-folder documents; employee links never grant ERP roles, original punches are unrestricted and immutable, and payroll publication preserves preliminary snapshots.
+- Schedule constraints run in the shared HR solver and payroll/vacation calculations in browser-safe tested rules; no UI-provided totals are authoritative and regulatory certification is not inferred from PDFs or employee acknowledgments.
